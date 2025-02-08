@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kahoot Quiz</title>
-    <!-- Include axios from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
 
     <h1>Kahoot Quiz Information</h1>
-    <label>INFORMATION: You NEED Allow CORS Extension for this: https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf?hl=en</label>
+    <label>INFORMATION: You do not need a CORS Unblocker Extension anymore!</label>
 
-    <!-- Input form for the user to enter the Kahoot ID -->
     <label for="kahootId">Input Kahoot ID:</label>
     <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
     <button onclick="submitKahootId()">Submit</button>
@@ -20,6 +18,12 @@
     <div id="quizInfo"></div>
 
     <script>
+        const corsHeaders = {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, HEAD, OPTIONS, PATCH',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        };
+
         // Function to handle user input and fetch quiz data
         function submitKahootId() {
             const kahootId = document.getElementById("kahootId").value;  // Get the input value
@@ -30,14 +34,13 @@
             }
         }
 
-        // Function to fetch quiz data using axios
+        // Function to fetch quiz data using axios with added CORS headers
         function GetAnswers(KahootID) {
-            const proxy = "https://corsproxy.io/?url="
+            const proxy = "https://corsproxy.io/?url=";
             const base_url = "https://create.kahoot.it/rest/kahoots/";
             const request_url = proxy + base_url + KahootID;  // Build the URL with Kahoot ID
 
-            // Use axios to make the GET request
-            axios.get(request_url)
+            axios.get(request_url, { headers: corsHeaders })  // Add CORS headers to the request
                 .then(response => {
                     const fent = response.data;  // Kahoot quiz data from the API
                     processQuizData(fent);  // Call function to process the quiz data
