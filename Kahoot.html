@@ -12,7 +12,7 @@
     <h1>Kahoot Quiz Information</h1>
     <!-- Input form for the user to enter the Kahoot ID -->
     <label for="kahootId">Input Kahoot ID:</label>
-    <input type="text" id="kahootId" placeholder="Enter Kahoot ID fix ">
+    <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
     <button onclick="submitKahootId()">Submit</button>
 
     <div id="quizInfo"></div>
@@ -67,7 +67,7 @@
                                 if (choice['correct'] === true) {
                                     // Modify color for True/False questions
                                     if (choice['answer'].includes("True") || choice['answer'].includes("False")) {
-                                        quizInfoDiv.innerHTML += `<p style="color:${choice['answer'].toLowerCase() === 'true' ? 'blue' : 'red'};">Answer: ${choice['answer']} (Color: ${["Red", "Blue", "Yellow", "Green"][j]})</p>`;
+                                        quizInfoDiv.innerHTML += `<p>Answer: ${choice['answer']} (Color: ${["Blue", "Red"][j]})</p>`;
                                     } else {
                                         quizInfoDiv.innerHTML += `<p>Answer: ${choice['answer']} (Color: ${["Red", "Blue", "Yellow", "Green"][j]})</p>`;
                                     }
