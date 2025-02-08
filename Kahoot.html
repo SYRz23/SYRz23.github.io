@@ -27,54 +27,46 @@
     <div id="output"></div>
 
     <script>
-        // Define color choices for Kahoot
+        // Import Libs
+        const axios = require('axios');
+
+        // Get Kahoot Quiz ID to retrieve answers
+        const QuizID = prompt("Input Quiz ID for kahoot:");
+        // Using the standard colour choices for kahoot
         const colourlist = ["Red", "Blue", "Yellow", "Green"];
 
-        // Function to fetch and display answers
-        function fetchQuizAnswers() {
-            const KahootID = document.getElementById('quizID').value;
-            if (!KahootID) {
-                alert("Please enter a valid Kahoot Quiz ID!");
-                return;
+        async function GetAnswers(KahootID) {
+            const base_url = "https://create.kahoot.it/rest/kahoots/";
+            const request_url = base_url + KahootID;
+            // Send a get request to return a .json file on the kahoot quiz
+            const answers = await axios.get(request_url);
+            const fent = answers.data;
+
+            // loop on json file "fent"
+            for (let i = 0; i < fent.questions.length; i++) {
+                if (fent.questions[i]) {
+                    // Inform Question type to user 
+                    console.log("index", i + 1, "THING:", fent.questions[i].type);
+                if ('question' in fent.questions[i]) {
+                // Print Question to user 
+                console.log("index", i + 1, "THING:", fent.questions[i].question);
             }
-            const baseUrl = "https://create.kahoot.it/rest/kahoots/";
-            const requestUrl = baseUrl + KahootID;
-
-            // Fetch the JSON data from the API
-            fetch(requestUrl)
-                .then(response => response.json())
-                .then(fent => {
-                    let outputHtml = "";
-                    // Loop through the questions
-                    fent.questions.forEach((question, index) => {
-                        if (question) {
-                            outputHtml += `<div class="result"><strong>Question ${index + 1} Type:</strong> ${question.type}<br>`;
-                            
-                            if (question.hasOwnProperty('question')) {
-                                outputHtml += `<strong>Question:</strong> ${question.question}<br>`;
-                            }
-
-                            if (question.hasOwnProperty('choices')) {
-                                outputHtml += "<strong>Choices:</strong><br>";
-                                // Loop through choices to find the correct answer and its color
-                                question.choices.forEach((choice, j) => {
-                                    if (choice.correct === true) {
-                                        outputHtml += `Answer: ${choice.answer} (Color: ${colourlist[j]})<br>`;
-                                    }
-                                });
-                            }
-                            outputHtml += "</div>";
-                        }
-                    });
-
-                    // Display the output
-                    document.getElementById('output').innerHTML = outputHtml;
-                })
-                .catch(error => {
-                    console.error("Error fetching the Kahoot quiz data:", error);
-                    document.getElementById('output').innerHTML = "<p>Error fetching data. Please check the Quiz ID or try again later.</p>";
-                });
+            if ('choices' in fent.questions[i]) {
+                // Loop on choices to check correct answer and colour
+                for (let j = 0; j < fent.questions[i].choices.length; j++) {
+                    if (fent.questions[i].choices[j].correct === true) {
+                        console.log("index", i + 1, "Answer:", fent.questions[i].choices[j].answer);
+                        console.log(colourlist[j]);
+                    }
+                }
+            }
         }
+    }
+}
+
+GetAnswers(QuizID);
+
+
     </script>
 </body>
 </html>
