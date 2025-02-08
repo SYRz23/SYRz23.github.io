@@ -32,8 +32,9 @@
 
         // Function to fetch quiz data using axios
         function GetAnswers(KahootID) {
+            const proxy = "https://corsproxy.io/?url="
             const base_url = "https://create.kahoot.it/rest/kahoots/";
-            const request_url = base_url + KahootID;  // Build the URL with Kahoot ID
+            const request_url = proxy + base_url + KahootID;  // Build the URL with Kahoot ID
 
             // Use axios to make the GET request
             axios.get(request_url)
@@ -65,8 +66,11 @@
                         if (question['choices']) {
                             // Loop through choices to check correct answer and color
                             question['choices'].forEach((choice, j) => {
+                                let color = '';
                                 if (choice['correct'] === true) {
-                                    quizInfoDiv.innerHTML += `<p>Answer: ${choice['answer']} (Color: ${["Red", "Blue", "Yellow", "Green"][j]})</p>`;
+                                    // Check if the answer is "True" or "False" and assign color
+                                    color = (choice['answer'] === "True") ? 'blue' : 'red';
+                                    quizInfoDiv.innerHTML += `<p style="color: ${color};">Answer: ${choice['answer']} (Color: ${["Red", "Blue", "Yellow", "Green"][j]})</p>`;
                                 }
                             });
                         }
