@@ -4,19 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kahoot Quiz</title>
-    <!-- Include axios from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
 
     <h1>Kahoot Quiz Information</h1>
 
-    <!-- Input form for the user to enter the Kahoot ID -->
     <label for="kahootId">Input Kahoot ID:</label>
     <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
     <br>
     
-    <!-- Input form for the user to enter the proxy URL -->
     <label for="proxyUrl">Enter Proxy URL (Optional):</label>
     <input type="text" id="proxyUrl" placeholder="Enter proxy URL if needed">
     <br>
@@ -42,16 +38,16 @@
             }
         }
 
-        // Function to fetch quiz data using axios without a proxy
+        // Function to fetch quiz data using fetch API without a proxy
         function GetAnswers(KahootID) {
             const base_url = "https://create.kahoot.it/rest/kahoots/";
             const request_url = base_url + KahootID;  // Build the URL with Kahoot ID
 
-            // Use axios to make the GET request
-            axios.get(request_url)
-                .then(response => {
-                    const fent = response.data;  // Kahoot quiz data from the API
-                    processQuizData(fent);  // Call function to process the quiz data
+            // Use fetch to make the GET request
+            fetch(request_url)
+                .then(response => response.json())  // Convert the response to JSON
+                .then(data => {
+                    processQuizData(data);  // Process the quiz data
                 })
                 .catch(error => {
                     console.error("Error:", error);  // Handle any errors
@@ -59,7 +55,7 @@
                 });
         }
 
-        // Function to fetch quiz data using a proxy to bypass CORS
+        // Function to fetch quiz data using fetch API with a proxy to bypass CORS
         function GetAnswersWithProxy(KahootID, proxyUrl) {
             const base_url = "https://create.kahoot.it/rest/kahoots/";
             const request_url = base_url + KahootID;  // Build the URL with Kahoot ID
@@ -67,11 +63,11 @@
             // Prepend the proxy URL to the API request URL
             const proxiedUrl = `${proxyUrl}?url=${encodeURIComponent(request_url)}`;
 
-            // Use axios to make the GET request through the proxy
-            axios.get(proxiedUrl)
-                .then(response => {
-                    const fent = response.data;  // Kahoot quiz data from the API
-                    processQuizData(fent);  // Call function to process the quiz data
+            // Use fetch to make the GET request through the proxy
+            fetch(proxiedUrl)
+                .then(response => response.json())  // Convert the response to JSON
+                .then(data => {
+                    processQuizData(data);  // Process the quiz data
                 })
                 .catch(error => {
                     console.error("Error:", error);  // Handle any errors
