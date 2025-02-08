@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kahoot Quiz</title>
-    <!-- Include axios from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
 
     <h1>Kahoot Quiz Information</h1>
-    <!-- Input form for the user to enter the Kahoot ID -->
     <label for="kahootId">Input Kahoot ID:</label>
     <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
     <button onclick="submitKahootId()">Submit</button>
@@ -18,54 +16,50 @@
     <div id="quizInfo"></div>
 
     <script>
-        // Function to handle user input and fetch quiz data
         function submitKahootId() {
-            const kahootId = document.getElementById("kahootId").value;  // Get the input value
+            const kahootId = document.getElementById("kahootId").value;
             if (kahootId) {
-                GetAnswers(kahootId);  // Fetch the quiz answers based on the Kahoot ID
+                GetAnswers(kahootId);
             } else {
                 alert("Please enter a valid Kahoot ID!");
             }
         }
 
-        // Function to fetch quiz data using axios
         function GetAnswers(KahootID) {
-            const proxy = "https://api.allorigins.win/get?url=";  // Updated proxy
+            const proxy = "https://api.allorigins.win/get?url="; 
             const base_url = "https://create.kahoot.it/rest/kahoots/";
-            const request_url = proxy + encodeURIComponent(base_url + KahootID);  // Encode URL properly
-
-            // Use axios to make the GET request
+            const request_url = proxy + encodeURIComponent(base_url + KahootID); 
+            
             axios.get(request_url)
                 .then(response => {
-                    const fent = JSON.parse(response.data.contents);  // Kahoot quiz data from the API
-                    processQuizData(fent);  // Call function to process the quiz data
+                    const fent = JSON.parse(response.data.contents);  
+                    processQuizData(fent); 
                 })
                 .catch(error => {
-                    console.error("Error:", error);  // Handle any errors
+                    console.error("Error:", error); 
                     alert("Failed to fetch quiz data. Please check the Kahoot ID.");
                 });
         }
 
-        // Function to process the quiz data
         function processQuizData(fent) {
             const quizInfoDiv = document.getElementById("quizInfo");
-            quizInfoDiv.innerHTML = '';  // Clear previous results
+            quizInfoDiv.innerHTML = '';
 
             // Display questions and answers
             fent['questions'].forEach((question, i) => {
                 if (question) {
-                    // Display question type
+                    
                     quizInfoDiv.innerHTML += `<h3>Question ${i + 1} Type: ${question['type']}</h3>`;
                     
                     if (question['question']) {
-                        // Display the question text
+                        
                         quizInfoDiv.innerHTML += `<p><strong>Question:</strong> ${question['question']}</p>`;
                         
                         if (question['choices']) {
-                            // Loop through choices to check correct answer and color
+                            
                             question['choices'].forEach((choice, j) => {
                                 if (choice['correct'] === true) {
-                                    // Modify color for True/False questions
+                                    
                                     if (choice['answer'].includes("True") || choice['answer'].includes("False")) {
                                         quizInfoDiv.innerHTML += `<p>Answer: ${choice['answer']} (Color: ${["Blue", "Red"][j]})</p>`;
                                     } else {
