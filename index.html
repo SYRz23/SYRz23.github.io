@@ -9,13 +9,55 @@
 <body>
 
     <h1>Kahoot Quiz Information</h1>
-    <label for="kahootId">Input Kahoot ID:</label>
-    <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
-    <button onclick="submitKahootId()">Submit</button>
 
-    <div id="quizInfo"></div>
+    <!-- Login Form -->
+    <h2>Login</h2>
+    <label for="username">Username:</label>
+    <input type="text" id="username" placeholder="Enter Username">
+    <label for="password">Password:</label>
+    <input type="password" id="password" placeholder="Enter Password">
+    <button onclick="login()">Login</button>
+
+    <div id="loginStatus"></div>
+    
+    <!-- Kahoot Quiz Section (Initially hidden until login) -->
+    <div id="quizSection" style="display: none;">
+        <label for="kahootId">Input Kahoot ID:</label>
+        <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
+        <button onclick="submitKahootId()">Submit</button>
+
+        <div id="quizInfo"></div>
+    </div>
 
     <script>
+        // Login function
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            // Send the login credentials to the serverless function
+            axios.post('/api/login', {
+                username: username,
+                password: password
+            })
+            .then(response => {
+                if (response.data.message === 'Login successful') {
+                    alert("Login successful!");
+                    document.getElementById("loginStatus").innerHTML = "Logged in successfully!";
+                    // Show Kahoot Quiz section after login
+                    document.getElementById("quizSection").style.display = "block";
+                } else {
+                    alert("Invalid credentials");
+                    document.getElementById("loginStatus").innerHTML = "Invalid login credentials.";
+                }
+            })
+            .catch(error => {
+                console.error("Error during login:", error);
+                alert("Login failed");
+            });
+        }
+
+        // Kahoot quiz submission
         function submitKahootId() {
             const kahootId = document.getElementById("kahootId").value;
             if (kahootId) {
@@ -25,6 +67,7 @@
             }
         }
 
+        // Fetch Kahoot answers
         function GetAnswers(KahootID) {
             const proxy = "https://api.allorigins.win/get?url="; 
             const base_url = "https://create.kahoot.it/rest/kahoots/";
@@ -41,6 +84,7 @@
                 });
         }
 
+        // Process and display quiz data
         function processQuizData(fent) {
             const quizInfoDiv = document.getElementById("quizInfo");
             quizInfoDiv.innerHTML = '';
@@ -48,18 +92,14 @@
             // Display questions and answers
             fent['questions'].forEach((question, i) => {
                 if (question) {
-                    
                     quizInfoDiv.innerHTML += `<h3>Question ${i + 1} Type: ${question['type']}</h3>`;
                     
                     if (question['question']) {
-                        
                         quizInfoDiv.innerHTML += `<p><strong>Question:</strong> ${question['question']}</p>`;
                         
                         if (question['choices']) {
-                            
                             question['choices'].forEach((choice, j) => {
                                 if (choice['correct'] === true) {
-                                    
                                     if (choice['answer'].includes("True") || choice['answer'].includes("False")) {
                                         quizInfoDiv.innerHTML += `<p>Answer: ${choice['answer']} (Color: ${["Blue", "Red"][j]})</p>`;
                                     } else {
