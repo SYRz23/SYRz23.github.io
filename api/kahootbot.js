@@ -31,11 +31,12 @@ module.exports = async (req, res) => {
         const client = new Kahoot();
 
         try {
-          // Join with timeout
+          // Join with timeout (fixed syntax)
           await Promise.race([
             client.join(kahootPin, botName),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Join timeout')), 10000)
+            new Promise((_, reject) => {
+              setTimeout(() => reject(new Error('Join timeout')), 10000);
+            })
           ]);
 
           // Set up answer handler
