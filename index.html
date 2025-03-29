@@ -6,144 +6,186 @@
     <title>Kahoot Quiz</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        .hidden { display: none; }
+        .success { color: green; }
+        .error { color: red; }
+        input, button { margin: 5px 0; }
+    </style>
 </head>
 <body>
-    <h2 id="logintitle" style="display: block;">Login</h2>
-    <form id="login" style="display: block;">
-        <input type="text" id="username" placeholder="Username"><br>
-        <input type="password" id="password" placeholder="Password"><br>
+    <h2 id="logintitle">Login</h2>
+    <form id="login">
+        <input type="text" id="username" placeholder="Username" required><br>
+        <input type="password" id="password" placeholder="Password" required><br>
         <button type="submit">Login</button>
     </form>
-    <h1 id="quizTitle" style="display: none;">Kahoot Quiz Information</h1>
 
-    <!-- Kahoot Quiz Section -->
-    <div id="quizSection" style="display: none;">
-        <label for="kahootId">Input Kahoot ID:</label>
-        <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
-        <button onclick="submitKahootId()">Submit</button>
+    <div class="hidden" id="authenticatedContent">
+        <h1>Kahoot Tools</h1>
 
-        <div id="quizInfo"></div>
-    </div>
+        <!-- Kahoot Answers Section -->
+        <div id="quizSection">
+            <h2>Kahoot Answers</h2>
+            <label for="kahootId">Kahoot ID:</label>
+            <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
+            <button onclick="submitKahootId()">Get Answers</button>
+            <div id="quizInfo"></div>
+        </div>
 
-    <h2 id="KBTitle" style="display: none;">Kahoot Quiz Bot</h2>
-    <div id="KBSection" style="display: none;">
-        <label for="kahootpin">Input Kahoot PIN and Username (for bot):</label>
-        <input type="text" id="kahootpin" placeholder="Enter Kahoot PIN">
-        <input type="text" id="kahootuser" placeholder="Enter Kahoot Username">
-        <input type="text" id="kahootbots" placeholder="Enter Amount Of Kahoot Bots">
-        <button type="button" onclick="submitKahootBotRequest()">Submit</button>
-        
-        <div id="responseMessage"></div>
+        <!-- Kahoot Bot Section -->
+        <div id="KBSection">
+            <h2>Kahoot Bot</h2>
+            <label for="kahootpin">Game PIN:</label>
+            <input type="text" id="kahootpin" placeholder="Enter Kahoot PIN" required>
+            
+            <label for="kahootuser">Username:</label>
+            <input type="text" id="kahootuser" placeholder="Enter Username" required>
+            
+            <label for="kahootbots">Number of Bots (1-50):</label>
+            <input type="number" id="kahootbots" placeholder="Number of bots" min="1" max="50" value="1">
+            
+            <button type="button" onclick="submitKahootBotRequest()">Send Bots</button>
+            <div id="responseMessage"></div>
+        </div>
     </div>
 
     <script>
-        // Password Check (Compare with Vercels env secret database)
+        // Password Check
         document.getElementById('login').onsubmit = function(logincheck) {
             logincheck.preventDefault();
-            var username = CryptoJS.SHA256(document.getElementById('username').value).toString();
-            var password = CryptoJS.SHA256(document.getElementById('password').value).toString();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-            const correctuser_hash256 = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
-            const correctpw_hash256 = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"
-            if(username === correctuser_hash256 && password == correctpw_hash256) {
-                alert('Login successful!');
-                document.getElementById('quizSection').style.display = "block";
-                document.getElementById('quizTitle').style.display = "block";
-                document.getElementById('KBTitle').style.display = "block";
-                document.getElementById('KBSection').style.display = "block";
-                document.getElementById('login').style.display = "none";
-                document.getElementById('logintitle').style.display = "none";
-            } else {
+            if (!username || !password) {
                 alert('Please enter both username and password');
+                return;
+            }
+
+            const usernameHash = CryptoJS.SHA256(username).toString();
+            const passwordHash = CryptoJS.SHA256(password).toString();
+
+            // Default credentials: admin/admin
+            const correctUserHash = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918";
+            const correctPwHash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
+
+            if(usernameHash === correctUserHash && passwordHash === correctPwHash) {
+                document.getElementById('logintitle').classList.add('hidden');
+                document.getElementById('login').classList.add('hidden');
+                document.getElementById('authenticatedContent').classList.remove('hidden');
+            } else {
+                alert('Invalid credentials');
             }
         };
         
         // Kahoot quiz submission
         async function submitKahootId() {
-            const kahootId = document.getElementById("kahootId").value;
-            if (kahootId) {
-                GetAnswers(kahootId);
-            } else {
+            const kahootId = document.getElementById("kahootId").value.trim();
+            if (!kahootId) {
                 alert("Please enter a valid Kahoot ID!");
+                return;
+            }
+            
+            try {
+                await GetAnswers(kahootId);
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to fetch quiz data. Please check the Kahoot ID.");
             }
         }
 
+        // Kahoot bot submission
         async function submitKahootBotRequest() {
-            const kahootpin = document.getElementById("kahootpin").value;
-            const kahootuser = document.getElementById("kahootuser").value;
-            const kahootbots = document.getElementById("kahootbots").value;
+            const pin = document.getElementById("kahootpin").value.trim();
+            const username = document.getElementById("kahootuser").value.trim();
+            const botCount = document.getElementById("kahootbots").value;
+            
+            if (!pin || !username) {
+                alert("Please enter both PIN and username!");
+                return;
+            }
 
+            const messageDiv = document.getElementById('responseMessage');
+            messageDiv.textContent = "Sending bots...";
+            messageDiv.className = "";
+            
             try {
                 const response = await fetch('/api/kahootbot', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ kahootpin, kahootuser }),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        kahootPin: pin, 
+                        username: username,
+                        botCount: Math.min(50, Math.max(1, parseInt(botCount) || 1))
+                    }),
                 });
 
                 const data = await response.json();
-
-                // Display success or error message
-                const messageDiv = document.getElementById('responseMessage');
+                
                 if (data.success) {
-                    messageDiv.textContent = `Successfully joined game as ${kahootuser}!`;
-                    messageDiv.style.color = 'green';
+                    messageDiv.textContent = data.message;
+                    messageDiv.className = "success";
                 } else {
-                    messageDiv.textContent = `Error: ${data.message}`;
-                    messageDiv.style.color = 'red';
+                    messageDiv.textContent = data.message || "Failed to send bots";
+                    messageDiv.className = "error";
                 }
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('responseMessage').textContent = 'There was an error connecting to the server.';
+                messageDiv.textContent = 'Failed to connect to server';
+                messageDiv.className = "error";
             }
         }
+
         // Fetch Kahoot answers
         async function GetAnswers(KahootID) {
             const proxy = "https://api.allorigins.win/get?url="; 
             const base_url = "https://create.kahoot.it/rest/kahoots/";
-            const request_url = proxy + encodeURIComponent(base_url + KahootID); 
+            const request_url = proxy + encodeURIComponent(base_url + KahootID);
             
-            axios.get(request_url)
-                .then(response => {
-                    const fent = JSON.parse(response.data.contents);  
-                    processQuizData(fent); 
-                })
-                .catch(error => {
-                    console.error("Error:", error); 
-                    alert("Failed to fetch quiz data. Please check the Kahoot ID.");
-                });
+            const response = await axios.get(request_url);
+            const quizData = JSON.parse(response.data.contents);
+            processQuizData(quizData);
         }
 
         // Process and display quiz data
-        function processQuizData(fent) {
+        function processQuizData(quizData) {
             const quizInfoDiv = document.getElementById("quizInfo");
             quizInfoDiv.innerHTML = '';
 
-            // Display questions and answers
-            fent['questions'].forEach((question, i) => {
-                if (question) {
-                    quizInfoDiv.innerHTML += `<h3>Question ${i + 1} Type: ${question['type']}</h3>`;
-                    
-                    if (question['question']) {
-                        quizInfoDiv.innerHTML += `<p><strong>Question:</strong> ${question['question']}</p>`;
-                        
-                        if (question['choices']) {
-                            question['choices'].forEach((choice, j) => {
-                                if (choice['correct'] === true) {
-                                    if (choice['answer'].includes("True") || choice['answer'].includes("False")) {
-                                        quizInfoDiv.innerHTML += `<p>Answer: ${choice['answer']} (Color: ${["Blue", "Red"][j]})</p>`;
-                                    } else {
-                                        quizInfoDiv.innerHTML += `<p>Answer: ${choice['answer']} (Color: ${["Red", "Blue", "Yellow", "Green"][j]})</p>`;
-                                    }
-                                }
-                            });
-                        }
-                    }
+            if (!quizData.questions || !quizData.questions.length) {
+                quizInfoDiv.innerHTML = '<p>No questions found in this quiz</p>';
+                return;
+            }
+
+            quizData.questions.forEach((question, i) => {
+                if (!question) return;
+                
+                let questionHtml = `<div class="question"><h3>Question ${i + 1}</h3>`;
+                questionHtml += `<p><strong>Type:</strong> ${question.type || 'Unknown'}</p>`;
+                
+                if (question.question) {
+                    questionHtml += `<p><strong>Question:</strong> ${question.question}</p>`;
                 }
+
+                if (question.choices && question.choices.length) {
+                    questionHtml += `<p><strong>Correct Answer(s):</strong></p><ul>`;
+                    
+                    question.choices.forEach((choice, j) => {
+                        if (choice.correct) {
+                            const color = question.type === 'true_false' ? 
+                                ["Blue", "Red"][j] : 
+                                ["Red", "Blue", "Yellow", "Green"][j];
+                            questionHtml += `<li>${choice.answer} (${color})</li>`;
+                        }
+                    });
+                    
+                    questionHtml += `</ul>`;
+                }
+                
+                questionHtml += `</div><hr>`;
+                quizInfoDiv.innerHTML += questionHtml;
             });
         }
     </script>
-
 </body>
 </html>
