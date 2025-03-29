@@ -1,44 +1,41 @@
-const Kahoot = require('kahoot.js-latest');
+const Kahoot = require("kahoot.js-latest");
 
 module.exports = async (req, res) => {
+  // Handle CORS preflight (OPTIONS)
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
+
+  // Only allow POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  const { kahootPin, username, botCount = 1 } = req.body;
+
   try {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method Not Allowed' });
-    }
-
-    const { kahootPin, username, botCount = 1 } = req.body;
-
-    if (!kahootPin || !username) {
-      return res.status(400).json({ error: 'Missing PIN or username' });
-    }
-
-    const clients = [];
-    const botUsername = botCount > 1 ? `${username}_${i+1}` : username;
-
-    for (let i = 0; i < Math.min(Number(botCount) || 1, 50); i++) {
+    for (let i = 0; i < Math.min(botCount, 50); i++) {
       const client = new Kahoot();
-      clients.push(client);
+      const botName = botCount > 1 ? `${username}_${i+1}` : username;
+      
+      await client.join(kahootPin, botName).catch(err => {
+        console.error(`Bot ${i+1} failed:`, err);
+      });
 
-      await new Promise((resolve) => {
-        client.join(kahootPin, botUsername)
-          .then(() => {
-            console.log(`Bot ${i+1} joined as ${botUsername}`);
-            resolve();
-          })
-          .catch(err => {
-            console.error(`Bot ${i+1} failed:`, err);
-            resolve();
-          });
-
-        client.on('QuestionStart', (question) => {
-          question.answer(Math.floor(Math.random() * question.numberOfAnswers));
-        });
+      // Auto-answer randomly
+      client.on("QuestionStart", (q) => {
+        q.answer(Math.floor(Math.random() * q.numberOfAnswers));
       });
     }
 
-    return res.status(200).json({ success: true, message: `${clients.length} bots joined!` });
+    res.status(200).json({ 
+      success: true, 
+      message: `✅ ${botCount} bot(s) joining game ${kahootPin}!` 
+    });
   } catch (error) {
-    console.error("Server error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Bot join failed: " + error.message });
   }
 };
