@@ -20,7 +20,7 @@ async function getKahootToken(pin) {
   
   // 2024 Decoding Algorithm
   return Array.from(challenge).map((char, i) => {
-    return String.fromCharCode(((char.charCodeAt(0) * i + 73) % 77 + 48);
+    return String.fromCharCode(((char.charCodeAt(0) * i + 73) % 77 + 48));
   }).join('');
 }
 
