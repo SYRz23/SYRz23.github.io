@@ -1,51 +1,36 @@
-// api/kahootbot.js
-const Kahoot = require('kahoot.js-updated');  // Import the kahoot-js library
+const Kahoot = require('kahoot.js-latest');
+const client = new Kahoot();
 
-module.exports = async (req, res) => {
-    const { gamePin, nickname } = req.body;
+export default function handler(req, res) {
+  if (req.method === 'POST') {
+    const { kahootPin, username } = req.body;
 
-    if (!gamePin || !nickname) {
-        return res.status(400).json({ success: false, message: "Missing game pin or nickname" });
-    }
+    console.log("Joining Kahoot...");
+    client.join(kahootPin, username);
 
-    try {
-        // Create a new Kahoot client
-        const client = new Kahoot();
+    client.on('Joined', () => {
+      console.log("I joined the Kahoot!");
+      res.status(200).json({ success: true, message: "Joined the game!" });
+    });
 
-        // Join the game using the game pin and nickname
-        client.join(gamePin, nickname);
+    client.on('QuizStart', () => {
+      console.log("The quiz has started!");
+    });
 
-        // When successfully joined, listen for events
-        client.on('joined', () => {
-            console.log(`Successfully joined the game: ${gamePin} as ${nickname}`);
-            res.status(200).json({ success: true, message: `Successfully joined the game as ${nickname}` });
-        });
+    client.on('QuestionStart', question => {
+      console.log("A new question has started, answering the first answer.");
+      question.answer(0);  // Answers the first option
+    });
 
-        // Listen for when the quiz starts
-        client.on('quizStart', (quiz) => {
-            console.log('Quiz has started!');
-            console.log('Quiz info:', quiz);
-        });
+    client.on('QuizEnd', () => {
+      console.log("The quiz has ended.");
+    });
 
-        // Handle answers
-        client.on('questionStart', (question) => {
-            console.log('New question:', question);
-            const answer = question.answers[0]; // Simple strategy to pick the first answer
-            client.answer(question, answer);
-        });
-
-        client.on('gameOver', () => {
-            console.log('Game over!');
-        });
-
-        // Handle errors
-        client.on('error', (error) => {
-            console.error('Error:', error);
-            res.status(500).json({ success: false, message: 'Error joining game or sending answer' });
-        });
-
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ success: false, message: 'Error connecting to Kahoot' });
-    }
-};
+    // Optional timeout if you want to send a response immediately
+    setTimeout(() => {
+      res.status(200).json({ success: true, message: "Request processed." });
+    }, 1000); // Delay to ensure the function doesn't hang
+  } else {
+    res.status(405).json({ error: 'Method Not Allowed' });
+  }
+}
