@@ -25,6 +25,17 @@
         <div id="quizInfo"></div>
     </div>
 
+    <h2 id="KBTitle" style="display: none;">Kahoot Quiz Bot</h2>
+    <div id="KBSection" style="display: none;">
+        <label for="kahootpin">Input Kahoot PIN and Username (for bot):</label>
+        <input type="text" id="kahootpin" placeholder="Enter Kahoot PIN">
+        <input type="text" id="kahootuser" placeholder="Enter Kahoot Username">
+        <input type="text" id="kahootbots" placeholder="Enter Amount Of Kahoot Bots">
+        <button type="button" onclick="submitKahootBotRequest()">Submit</button>
+        
+        <div id="responseMessage"></div>
+    </div>
+
     <script>
         // Password Check (Compare with Vercels env secret database)
         document.getElementById('login').onsubmit = function(logincheck) {
@@ -46,7 +57,7 @@
         };
         
         // Kahoot quiz submission
-        function submitKahootId() {
+        async function submitKahootId() {
             const kahootId = document.getElementById("kahootId").value;
             if (kahootId) {
                 GetAnswers(kahootId);
@@ -55,8 +66,38 @@
             }
         }
 
+        async function submitKahootBotRequest() {
+            const kahootpin = document.getElementById("kahootpin").value;
+            const kahootuser = document.getElementById("kahootuser").value;
+            const kahootbots = document.getElementById("kahootbots").value;
+
+            try {
+                const response = await fetch('/api/kahootbot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ kahootpin, kahootuser }),
+                });
+
+                const data = await response.json();
+
+                // Display success or error message
+                const messageDiv = document.getElementById('responseMessage');
+                if (data.success) {
+                    messageDiv.textContent = `Successfully joined game as ${kahootuser}!`;
+                    messageDiv.style.color = 'green';
+                } else {
+                    messageDiv.textContent = `Error: ${data.message}`;
+                    messageDiv.style.color = 'red';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('responseMessage').textContent = 'There was an error connecting to the server.';
+            }
+        
         // Fetch Kahoot answers
-        function GetAnswers(KahootID) {
+        async function GetAnswers(KahootID) {
             const proxy = "https://api.allorigins.win/get?url="; 
             const base_url = "https://create.kahoot.it/rest/kahoots/";
             const request_url = proxy + encodeURIComponent(base_url + KahootID); 
