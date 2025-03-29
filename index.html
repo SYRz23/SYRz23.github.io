@@ -11,17 +11,10 @@
     <h1>Kahoot Quiz Information</h1>
 
     <!-- Login Form -->
-    <h2>Login</h2>
-    <label for="username">Username:</label>
-    <input type="text" id="username" placeholder="Enter Username">
-    <label for="password">Password:</label>
-    <input type="password" id="password" placeholder="Enter Password">
-    <button onclick="login()">Login</button>
-
-    <div id="loginStatus"></div>
+    <h2>Changed From login to login-less for the time-being</h2>
     
-    <!-- Kahoot Quiz Section (Initially hidden until login) -->
-    <div id="quizSection" style="display: none;">
+    <!-- Kahoot Quiz Section -->
+    <div id="quizSection" style="display: block;">
         <label for="kahootId">Input Kahoot ID:</label>
         <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
         <button onclick="submitKahootId()">Submit</button>
@@ -30,33 +23,6 @@
     </div>
 
     <script>
-        // Login function
-        function login() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-
-            // Send the login credentials to the serverless function
-            axios.post('/api/login', {
-                username: username,
-                password: password
-            })
-            .then(response => {
-                if (response.data.message === 'Login successful') {
-                    alert("Login successful!");
-                    document.getElementById("loginStatus").innerHTML = "Logged in successfully!";
-                    // Show Kahoot Quiz section after login
-                    document.getElementById("quizSection").style.display = "block";
-                } else {
-                    alert("Invalid credentials");
-                    document.getElementById("loginStatus").innerHTML = "Invalid login credentials.";
-                }
-            })
-            .catch(error => {
-                console.error("Error during login:", error);
-                alert("Login failed");
-            });
-        }
-
         // Kahoot quiz submission
         function submitKahootId() {
             const kahootId = document.getElementById("kahootId").value;
