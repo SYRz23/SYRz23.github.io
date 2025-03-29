@@ -106,7 +106,7 @@ class KahootBot {
 
 // Usage example
 module.exports = async (req, res) => {
-  const { pin, username, botCount = 1 } = req.body;
+  const { kahootPin:pin, username, botCount = 1 } = req.body;
   const bots = [];
 
   for (let i = 0; i < Math.min(botCount, 50); i++) {
