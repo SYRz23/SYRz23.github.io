@@ -1,58 +1,44 @@
 const Kahoot = require('kahoot.js-latest');
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
-  const { kahootPin, username, botCount = 1 } = req.body;
-
+module.exports = async (req, res) => {
   try {
-    const joinPromises = [];
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method Not Allowed' });
+    }
+
+    const { kahootPin, username, botCount = 1 } = req.body;
+
+    if (!kahootPin || !username) {
+      return res.status(400).json({ error: 'Missing PIN or username' });
+    }
+
     const clients = [];
-    
-    // Create multiple bots if requested
-    for (let i = 0; i < Math.min(Number(botCount) || 1; i++) {
+    const botUsername = botCount > 1 ? `${username}_${i+1}` : username;
+
+    for (let i = 0; i < Math.min(Number(botCount) || 1, 50); i++) {
       const client = new Kahoot();
       clients.push(client);
-      
-      const botUsername = botCount > 1 ? `${username}${i+1}` : username;
-      
-      joinPromises.push(new Promise((resolve) => {
+
+      await new Promise((resolve) => {
         client.join(kahootPin, botUsername)
           .then(() => {
             console.log(`Bot ${i+1} joined as ${botUsername}`);
             resolve();
           })
           .catch(err => {
-            console.error(`Bot ${i+1} failed to join:`, err);
-            resolve(); // Resolve even if failed to prevent hanging
+            console.error(`Bot ${i+1} failed:`, err);
+            resolve();
           });
 
-        client.on('QuestionStart', question => {
-          console.log(`Bot ${i+1}: Question started, answering randomly`);
+        client.on('QuestionStart', (question) => {
           question.answer(Math.floor(Math.random() * question.numberOfAnswers));
         });
-
-        client.on('QuizEnd', () => {
-          console.log(`Bot ${i+1}: Quiz ended`);
-        });
-      }));
+      });
     }
 
-    // Wait for all bots to attempt joining
-    await Promise.all(joinPromises);
-    
-    return res.status(200).json({ 
-      success: true, 
-      message: `Successfully sent ${clients.length} bots to the game` 
-    });
-    
+    return res.status(200).json({ success: true, message: `${clients.length} bots joined!` });
   } catch (error) {
-    console.error('Server error:', error);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Internal server error' 
-    });
+    console.error("Server error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-}
+};
