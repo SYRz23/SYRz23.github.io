@@ -1,7 +1,7 @@
+const WebSocket = require("ws");
 const Kahoot = require("kahoot.js-latest");
 
 module.exports = async (req, res) => {
-  // Handle CORS preflight (OPTIONS)
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST');
@@ -9,7 +9,6 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
-  // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -20,14 +19,49 @@ module.exports = async (req, res) => {
     for (let i = 0; i < Math.min(botCount, 50); i++) {
       const client = new Kahoot();
       const botName = botCount > 1 ? `${username}_${i+1}` : username;
-      
-      await client.join(kahootPin, botName).catch(err => {
-        console.error(`Bot ${i+1} failed:`, err);
+
+      // 1️⃣ Open WebSocket to Kahoot servers
+      const ws = new WebSocket(`wss://kahoot.it/cometd/${kahootPin}/handshake`);
+
+      ws.on("open", () => {
+        console.log(`🔗 Bot ${botName} WebSocket opened`);
+        
+        // 2️⃣ Send Handshake request
+        ws.send(JSON.stringify({
+          channel: "/meta/handshake",
+          id: "1",
+          version: "1.0",
+          minimumVersion: "1.0",
+          supportedConnectionTypes: ["websocket", "long-polling"],
+          advice: { timeout: 60000, interval: 0 },
+        }));
       });
 
-      // Auto-answer randomly
-      client.on("QuestionStart", (q) => {
-        q.answer(Math.floor(Math.random() * q.numberOfAnswers));
+      ws.on("message", async (data) => {
+        const response = JSON.parse(data.toString());
+
+        // 3️⃣ Wait for successful handshake response
+        if (response.channel === "/meta/handshake" && response.successful) {
+          console.log(`✅ Bot ${botName} handshake successful!`);
+          
+          // 4️⃣ Join the game
+          await client.join(kahootPin, botName).catch(err => {
+            console.error(`Bot ${i+1} failed:`, err);
+          });
+
+          // 5️⃣ Auto-answer questions
+          client.on("QuestionStart", (q) => {
+            q.answer(Math.floor(Math.random() * q.numberOfAnswers));
+          });
+        }
+      });
+
+      ws.on("error", (err) => {
+        console.error(`❌ WebSocket error for bot ${botName}:`, err);
+      });
+
+      ws.on("close", () => {
+        console.log(`🔒 WebSocket closed for bot ${botName}`);
       });
     }
 
