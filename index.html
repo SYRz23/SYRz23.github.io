@@ -5,16 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kahoot Quiz</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
+    <h2 id="logintitle" style="display: block;">Login</h2>
+    <form id="login" style="display: block;">
+        <input type="text" id="username" placeholder="Username"><br>
+        <input type="password" id="password" placeholder="Password"><br>
+        <button type="submit">Login</button>
+    </form>
+    <h1 id="quizTitle" style="display: none;">Kahoot Quiz Information</h1>
 
-    <h1>Kahoot Quiz Information</h1>
-
-    <!-- Login Form -->
-    <h2>Changed From login to login-less for the time-being</h2>
-    
     <!-- Kahoot Quiz Section -->
-    <div id="quizSection" style="display: block;">
+    <div id="quizSection" style="display: none;">
         <label for="kahootId">Input Kahoot ID:</label>
         <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
         <button onclick="submitKahootId()">Submit</button>
@@ -23,6 +26,25 @@
     </div>
 
     <script>
+        // Password Check (Compare with Vercels env secret database)
+        document.getElementById('login').onsubmit = function(logincheck) {
+            logincheck.preventDefault();
+            var username = CryptoJS.SHA256(document.getElementById('username').value).toString();
+            var password = CryptoJS.SHA256(document.getElementById('password').value).toString();
+
+            const correctuser_hash256 = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
+            const correctpw_hash256 = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"
+            if(username === correctuser_hash256 && password == correctpw_hash256) {
+                alert('Login successful!');
+                document.getElementById('quizSection').style.display = "block";
+                document.getElementById('quizTitle').style.display = "block";
+                document.getElementById('login').style.display = "none";
+                document.getElementById('logintitle').style.display = "none";
+            } else {
+                alert('Please enter both username and password');
+            }
+        };
+        
         // Kahoot quiz submission
         function submitKahootId() {
             const kahootId = document.getElementById("kahootId").value;
