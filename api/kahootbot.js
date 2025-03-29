@@ -1,5 +1,5 @@
 // api/kahootbot.js
-const Kahoot = require('kahoot-js');  // Import the kahoot-js library
+const Kahoot = require('kahoot.js-updated');  // Import the kahoot-js library
 
 module.exports = async (req, res) => {
     const { gamePin, nickname } = req.body;
