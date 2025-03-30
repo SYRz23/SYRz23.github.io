@@ -13,10 +13,21 @@
             margin: 0 auto;
             padding: 20px;
         }
-        .hidden { display: none; }
-        .success { color: green; font-weight: bold; }
-        .error { color: red; font-weight: bold; }
-        input, button { margin: 5px 0; padding: 8px; }
+        .hidden {
+            display: none;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        input, button {
+            margin: 5px 0;
+            padding: 8px;
+        }
         button {
             background-color: #4CAF50;
             color: white;
@@ -66,13 +77,13 @@
             <h2>Kahoot Bot</h2>
             <label for="kahootpin">Game PIN:</label>
             <input type="text" id="kahootpin" placeholder="Enter Kahoot PIN" required>
-            
+
             <label for="kahootuser">Username:</label>
             <input type="text" id="kahootuser" placeholder="Enter Username" required>
-            
+
             <label for="kahootbots">Number of Bots (1-50):</label>
             <input type="number" id="kahootbots" placeholder="Number of bots" min="1" max="50" value="1">
-            
+
             <button type="button" onclick="submitKahootBotRequest()">Send Bots</button>
             <div id="responseMessage"></div>
         </div>
@@ -93,7 +104,7 @@
             const usernameHash = CryptoJS.SHA256(username).toString();
             const passwordHash = CryptoJS.SHA256(password).toString();
 
-            // Default credentials: admin/admin
+            // Credientials hashed using SHA256 with no salt
             const correctUserHash = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918";
             const correctPwHash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
 
@@ -105,7 +116,7 @@
                 alert('Invalid credentials');
             }
         };
-        
+
         // Kahoot quiz submission
         async function submitKahootId() {
             const kahootId = document.getElementById("kahootId").value.trim();
@@ -113,7 +124,7 @@
                 alert("Please enter a valid Kahoot ID!");
                 return;
             }
-            
+
             try {
                 await GetAnswers(kahootId);
             } catch (error) {
@@ -127,7 +138,7 @@
             const pin = document.getElementById("kahootpin").value.trim();
             const username = document.getElementById("kahootuser").value.trim();
             const botCount = document.getElementById("kahootbots").value;
-            
+
             if (!pin || !username) {
                 alert("Please enter both PIN and username!");
                 return;
@@ -136,36 +147,31 @@
             const messageDiv = document.getElementById('responseMessage');
             messageDiv.textContent = "Sending bots...";
             messageDiv.className = "";
-            
-            try {
-                // Make sure we're using the correct API URL
-                // Use axios instead of fetch for better error handling
-                const response = await axios.post('/api/kahootbot', {
-                    kahootPin: pin,
-                    username: username,
-                    botCount: parseInt(botCount)
-                });
-                
-                // Axios puts the response data directly in response.data
-                const data = response.data;
-                
-                messageDiv.textContent = data.message || "Bots sent successfully!";
-                messageDiv.className = "success";
-            } catch (error) {
-                console.error('Error:', error);
-                messageDiv.textContent = error.response?.data?.message || 'Failed to connect to server';
-                messageDiv.className = "error";
+
+            const response = await fetch('/api/startbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pin, user: username }),
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message);
+            } else {
+                alert('Error: ' + result.error);
             }
         }
 
         // Fetch Kahoot answers
         async function GetAnswers(KahootID) {
-            const proxy = "https://api.allorigins.win/get?url="; 
+            const proxy = "https://api.allorigins.win/get?url=";
             const base_url = "https://create.kahoot.it/rest/kahoots/";
             const request_url = proxy + encodeURIComponent(base_url + KahootID);
-            
+
             document.getElementById("quizInfo").innerHTML = '<p>Loading quiz data...</p>';
-            
+
             try {
                 const response = await axios.get(request_url);
                 if (response.data && response.data.contents) {
@@ -198,27 +204,27 @@
 
             quizData.questions.forEach((question, i) => {
                 if (!question) return;
-                
+
                 let questionHtml = `<div class="question"><h3>Question ${i + 1}</h3>`;
                 questionHtml += `<p><strong>Type:</strong> ${question.type || 'Unknown'}</p>`;
-                
+
                 if (question.question) {
                     questionHtml += `<p><strong>Question:</strong> ${question.question}</p>`;
                 }
-                
+
                 if (question.choices && question.choices.length) {
                     questionHtml += `<p><strong>Correct Answer(s):</strong></p><ul>`;
-                    
+
                     question.choices.forEach((choice, j) => {
                         if (choice.correct) {
                             const color = ["Red", "Blue", "Yellow", "Green"][j];
                             questionHtml += `<li>${choice.answer} (${color})</li>`;
                         }
                     });
-                    
+
                     questionHtml += `</ul>`;
                 }
-                
+
                 questionHtml += `</div><hr>`;
                 quizInfoDiv.innerHTML += questionHtml;
             });
