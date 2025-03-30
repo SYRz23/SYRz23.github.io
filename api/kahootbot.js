@@ -1,4 +1,3 @@
-// Use CommonJS require (Vercel prefers this)
 const Kahoot = require('kahoot.js-updated');
 
 module.exports = async (req, res) => {
@@ -16,27 +15,26 @@ module.exports = async (req, res) => {
 
   try {
     const { kahootPin, username } = req.body;
-    const client = new Kahoot();
     
-    // Immediate response - Vercel functions can't stay open
-    res.status(202).json({ 
-      status: 'processing',
-      message: 'Bot join initiated' 
+    // Immediate response
+    res.status(200).json({ 
+      success: true,
+      message: 'Bot join request received'
     });
 
-    // Actual bot logic (runs after response)
+    // Background processing
+    const client = new Kahoot();
     await client.join(kahootPin, username);
     
     client.on("QuestionReady", question => {
       const answer = Math.floor(Math.random() * 4);
-      setTimeout(() => client.answer(answer), 1000);
+      client.answer(answer);
     });
 
-    // Keep process alive (Vercel-specific hack)
-    await new Promise(() => {});
-    
+    // Keep process alive temporarily
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
   } catch (err) {
     console.error('Bot error:', err);
-    // Note: Can't modify response after sending
   }
 };
