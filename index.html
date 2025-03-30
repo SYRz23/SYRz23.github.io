@@ -69,7 +69,7 @@
             const correctUserHash = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918";
             const correctPwHash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
 
-            if(usernameHash === correctUserHash && passwordHash === correctPwHash) {
+            if (usernameHash === correctUserHash && passwordHash === correctPwHash) {
                 document.getElementById('logintitle').classList.add('hidden');
                 document.getElementById('login').classList.add('hidden');
                 document.getElementById('authenticatedContent').classList.remove('hidden');
@@ -113,20 +113,16 @@
                 const response = await fetch('/api/kahootbot', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        kahootPin: pin, 
-                        username: username,
-                        botCount: Math.min(50, Math.max(1, parseInt(botCount) || 1))
-                    }),
+                    body: JSON.stringify({ kahootPin: pin, username: username }),
                 });
-
+                
                 const data = await response.json();
                 
                 if (data.success) {
                     messageDiv.textContent = data.message;
                     messageDiv.className = "success";
                 } else {
-                    messageDiv.textContent = data.message || "Failed to send bots";
+                    messageDiv.textContent = data.message || "Failed to send bot";
                     messageDiv.className = "error";
                 }
             } catch (error) {
@@ -166,15 +162,13 @@
                 if (question.question) {
                     questionHtml += `<p><strong>Question:</strong> ${question.question}</p>`;
                 }
-
+                
                 if (question.choices && question.choices.length) {
                     questionHtml += `<p><strong>Correct Answer(s):</strong></p><ul>`;
                     
                     question.choices.forEach((choice, j) => {
                         if (choice.correct) {
-                            const color = question.type === 'true_false' ? 
-                                ["Blue", "Red"][j] : 
-                                ["Red", "Blue", "Yellow", "Green"][j];
+                            const color = ["Red", "Blue", "Yellow", "Green"][j];
                             questionHtml += `<li>${choice.answer} (${color})</li>`;
                         }
                     });
