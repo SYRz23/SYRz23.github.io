@@ -84,6 +84,9 @@
             <label for="kahootbots">Number of Bots (1-50):</label>
             <input type="number" id="kahootbots" placeholder="Number of bots" min="1" max="50" value="1">
 
+            <label for="kahootbots">Bot Send Delay (0-1000ms):</label>
+            <input type="number" id="delaytimer" placeholder="Number of bots" min="0" max="1000" value="800">
+
             <button type="button" onclick="submitKahootBotRequest()">Send Bots</button>
             <div id="responseMessage"></div>
         </div>
@@ -134,10 +137,11 @@
         }
 
         // Kahoot bot submission
-        async function submitKahootBotRequest() {
+        async function submitKahootBotRequest(amount) {
             const pin = document.getElementById("kahootpin").value.trim();
-            const username = document.getElementById("kahootuser").value.trim();
+            var username = document.getElementById("kahootuser").value.trim();
             const botCount = document.getElementById("kahootbots").value;
+            const Delay = document.getElementById("delaytimer").value;
 
             if (!pin || !username) {
                 alert("Please enter both PIN and username!");
@@ -147,18 +151,24 @@
             const messageDiv = document.getElementById('responseMessage');
             messageDiv.textContent = "Sending bots...";
             messageDiv.className = "";
-
-            const response = await fetch('/api/kahootbot', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ pin, user: username }),
-            });
-
+            for (let i = 0; i < botCount; i++) {
+                if (i == 0) {
+                    var final = username
+                } else {
+                    var final = username.concat(toString(i))
+                }
+                const response = await fetch('/api/kahootbot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ pin, user: final }),
+                });
+                await wait(Delay)
+            }
             const result = await response.json();
             if (response.ok) {
-                alert(result.message);
+                alert(result.message + 'Amount:' + botCount);
             } else {
                 alert('Error: ' + result.error);
             }
