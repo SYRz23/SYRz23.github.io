@@ -141,11 +141,11 @@
         }
 
         // Kahoot bot submission
-        async function submitKahootBotRequest(amount) {
+        async function submitKahootBotRequest() {
             const pin = document.getElementById("kahootpin").value.trim();
-            var username = document.getElementById("kahootuser").value.trim();
-            const botCount = document.getElementById("kahootbots").value;
-            const Delay = document.getElementById("delaytimer").value;
+            let username = document.getElementById("kahootuser").value.trim();
+            const botCount = parseInt(document.getElementById("kahootbots").value, 10);
+            const delay = parseInt(document.getElementById("delaytimer").value, 10);
 
             if (!pin || !username) {
                 alert("Please enter both PIN and username!");
@@ -155,27 +155,37 @@
             const messageDiv = document.getElementById('responseMessage');
             messageDiv.textContent = "Sending bots...";
             messageDiv.className = "";
+
+            let botPromises = [];
+
             for (let i = 0; i < botCount; i++) {
-                if (i == 0) {
-                    var final = username
-                } else {
-                    var final = username.concat(i.toString())
-                }
-                const response = await fetch('/api/kahootbot', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ pin, user: final }),
-                });
-                await wait(Delay)
+                let finalUsername = i === 0 ? username : username + i.toString();
+
+                botPromises.push(
+                    new Promise(async (resolve) => {
+                        try {
+                            const response = await fetch('/api/kahootbot', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ pin, user: finalUsername }),
+                            });
+
+                            const result = await response.json();
+                            console.log(`Bot ${finalUsername} ${response.ok ? "joined" : "failed"}`);
+
+                        } catch (error) {
+                            console.error(`❌ Request failed for ${finalUsername}:`, error);
+                        }
+
+                        // Wait before resolving to avoid sending all at once
+                        await wait(delay);
+                        resolve();
+                    })
+                );
             }
-            const result = await response.json();
-            if (response.ok) {
-                alert(result.message + 'Amount:' + botCount);
-            } else {
-                alert('Error: ' + result.error);
-            }
+
+            await Promise.all(botPromises); // Wait for all bots to finish
+            alert(`Bots sent: ${botCount}`);
         }
 
         // Fetch Kahoot answers
