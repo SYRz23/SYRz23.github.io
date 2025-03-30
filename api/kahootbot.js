@@ -1,4 +1,4 @@
-const Kahoot = require('kahoot.js-updated');
+import Kahoot from 'kahoot.js-updated';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
