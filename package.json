@@ -4,10 +4,10 @@
     "kahoot.js-updated": "^3.404.1",
     "readline-sync": "^1.4.10"
   },
-  "functions": {
-    "api/kahootbot.js": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
+  "devDependencies": {
+    "@vercel/node": "^2.15.3"
+  },
+  "engines": {
+    "node": ">=16.x"
   }
 }
