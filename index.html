@@ -7,10 +7,38 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
         .hidden { display: none; }
-        .success { color: green; }
-        .error { color: red; }
-        input, button { margin: 5px 0; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        input, button { margin: 5px 0; padding: 8px; }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .question {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -25,7 +53,7 @@
         <h1>Kahoot Tools</h1>
 
         <!-- Kahoot Answers Section -->
-        <div id="quizSection">
+        <div id="quizSection" class="section">
             <h2>Kahoot Answers</h2>
             <label for="kahootId">Kahoot ID:</label>
             <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
@@ -34,7 +62,7 @@
         </div>
 
         <!-- Kahoot Bot Section -->
-        <div id="KBSection">
+        <div id="KBSection" class="section">
             <h2>Kahoot Bot</h2>
             <label for="kahootpin">Game PIN:</label>
             <input type="text" id="kahootpin" placeholder="Enter Kahoot PIN" required>
@@ -90,7 +118,7 @@
                 await GetAnswers(kahootId);
             } catch (error) {
                 console.error("Error:", error);
-                alert("Failed to fetch quiz data. Please check the Kahoot ID.");
+                document.getElementById("quizInfo").innerHTML = `<p class="error">Failed to fetch quiz data. Please check the Kahoot ID.</p>`;
             }
         }
 
@@ -110,24 +138,22 @@
             messageDiv.className = "";
             
             try {
-                const response = await fetch('/api/kahootbot', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ kahootPin: pin, username: username }),
+                // Make sure we're using the correct API URL
+                // Use axios instead of fetch for better error handling
+                const response = await axios.post('/api/kahootbot', {
+                    kahootPin: pin,
+                    username: username,
+                    botCount: parseInt(botCount)
                 });
                 
-                const data = await response.json();
+                // Axios puts the response data directly in response.data
+                const data = response.data;
                 
-                if (data.success) {
-                    messageDiv.textContent = data.message;
-                    messageDiv.className = "success";
-                } else {
-                    messageDiv.textContent = data.message || "Failed to send bot";
-                    messageDiv.className = "error";
-                }
+                messageDiv.textContent = data.message || "Bots sent successfully!";
+                messageDiv.className = "success";
             } catch (error) {
                 console.error('Error:', error);
-                messageDiv.textContent = 'Failed to connect to server';
+                messageDiv.textContent = error.response?.data?.message || 'Failed to connect to server';
                 messageDiv.className = "error";
             }
         }
@@ -138,9 +164,21 @@
             const base_url = "https://create.kahoot.it/rest/kahoots/";
             const request_url = proxy + encodeURIComponent(base_url + KahootID);
             
-            const response = await axios.get(request_url);
-            const quizData = JSON.parse(response.data.contents);
-            processQuizData(quizData);
+            document.getElementById("quizInfo").innerHTML = '<p>Loading quiz data...</p>';
+            
+            try {
+                const response = await axios.get(request_url);
+                if (response.data && response.data.contents) {
+                    const quizData = JSON.parse(response.data.contents);
+                    processQuizData(quizData);
+                } else {
+                    document.getElementById("quizInfo").innerHTML = '<p class="error">Invalid response format from proxy server</p>';
+                }
+            } catch (error) {
+                console.error("Error fetching quiz:", error);
+                document.getElementById("quizInfo").innerHTML = '<p class="error">Failed to fetch quiz data</p>';
+                throw error;
+            }
         }
 
         // Process and display quiz data
@@ -148,9 +186,14 @@
             const quizInfoDiv = document.getElementById("quizInfo");
             quizInfoDiv.innerHTML = '';
 
-            if (!quizData.questions || !quizData.questions.length) {
-                quizInfoDiv.innerHTML = '<p>No questions found in this quiz</p>';
+            if (!quizData || !quizData.questions || !quizData.questions.length) {
+                quizInfoDiv.innerHTML = '<p class="error">No questions found in this quiz</p>';
                 return;
+            }
+
+            // Add quiz title and information
+            if (quizData.title) {
+                quizInfoDiv.innerHTML += `<h3>Quiz: ${quizData.title}</h3>`;
             }
 
             quizData.questions.forEach((question, i) => {
