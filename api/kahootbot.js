@@ -37,5 +37,3 @@ async function singleBot() {
         console.log(`❌ Error: ${err.description}`);
     }
 }
-
-singleBot();
