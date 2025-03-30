@@ -1,20 +1,26 @@
 const Kahoot = require("kahoot.js-updated");
-const readline = require('readline-sync');
 
-// Simple bot with manual answering
-async function singleBot(PIN, NAME) {
-    const pin = PIN;
-    const name = NAME;
+export default async function handler(req, res) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ success: false, message: "Method Not Allowed" });
+    }
 
-    const client = new Kahoot();
-    
+    const { kahootPin, username } = req.body;
+
+    if (!kahootPin || !username) {
+        return res.status(400).json({ success: false, message: "Missing PIN or username" });
+    }
+
     try {
-        await client.join(pin, name);
-        console.log(`✅ ${name} joined successfully!`);
+        const client = new Kahoot();
+        
+        client.join(kahootPin, username).then(() => {
+            console.log(`✅ ${username} joined successfully!`);
+        });
 
         client.on("QuestionReady", question => {
             console.log("\nNew Question:");
-            console.log(`Type: ${question.type}`);
+            console.log(Type: ${question.type});
             
             if (question.type === "quiz") {
                 console.log("Choices:", question.quizQuestionAnswers[question.questionIndex]);
@@ -30,10 +36,16 @@ async function singleBot(PIN, NAME) {
             }
         });
 
-        client.on("QuestionEnd", () => console.log("Question ended"));
-        client.on("QuizEnd", () => console.log("Game ended"));
+        client.on("Joined", () => {
+            return res.status(200).json({ success: true, message: `${username} joined successfully!` });
+        });
 
-    } catch (err) {
-        console.log(`❌ Error: ${err.description}`);
+        client.on("QuizEnd", () => {
+            console.log("Game ended");
+        });
+
+    } catch (error) {
+        console.error(`❌ Error: ${error}`);
+        return res.status(500).json({ success: false, message: "Failed to join Kahoot" });
     }
 }
