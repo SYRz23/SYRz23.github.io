@@ -1,4 +1,4 @@
-import Kahoot from 'kahoot.js-updated';
+import Kahoot from 'kahoot.js-latest';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
