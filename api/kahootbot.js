@@ -2,9 +2,9 @@ const Kahoot = require("kahoot.js-updated");
 const readline = require('readline-sync');
 
 // Simple bot with manual answering
-async function singleBot() {
-    const pin = readline.question('Enter Game PIN: ');
-    const name = readline.question('Enter bot name: ');
+async function singleBot(PIN, NAME) {
+    const pin = PIN;
+    const name = NAME;
 
     const client = new Kahoot();
     
