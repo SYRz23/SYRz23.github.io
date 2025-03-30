@@ -1,5 +1,7 @@
 {
-  "type": module,
+  "scripts": {
+    "dev": "node server.js"
+  }
   "dependencies": {
     "kahoot.js-updated": "^3.404.1",
     "readline-sync": "^1.4.10"
