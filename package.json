@@ -1,7 +1,4 @@
 {
-  "scripts": {
-    "dev": "node server.js"
-  }
   "type": "module"
   "dependencies": {
     "kahoot.js-updated": "^3.404.1",
