@@ -1,33 +1,25 @@
-const Kahoot = require("kahoot.js-updated");
+import Kahoot from 'kahoot.js-updated';
+import readlineSync from 'readline-sync';
 
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ success: false, message: "Method Not Allowed" });
-    }
-
-    const { kahootPin, username } = req.body;
-
-    if (!kahootPin || !username) {
-        return res.status(400).json({ success: false, message: "Missing PIN or username" });
-    }
+    const pin = req.body.kahootPin;
+    const name = req.body.username;
+    const client = new Kahoot();
 
     try {
-        const client = new Kahoot();
-        
-        client.join(kahootPin, username).then(() => {
-            console.log(`✅ ${username} joined successfully!`);
-        });
+        await client.join(pin, name);
+        console.log(`✅ ${name} joined successfully!`);
 
         client.on("QuestionReady", question => {
             console.log("\nNew Question:");
-            console.log(Type: ${question.type});
+            console.log(`Type: ${question.type}`);
             
             if (question.type === "quiz") {
                 console.log("Choices:", question.quizQuestionAnswers[question.questionIndex]);
-                const answer = readline.question('Enter answer (0-3): ');
+                const answer = readlineSync.question('Enter answer (0-3): ');
                 client.answer(parseInt(answer));
             } else if (question.type === "word_cloud" || question.type === "open_ended") {
-                const answer = readline.question('Enter text answer: ');
+                const answer = readlineSync.question('Enter text answer: ');
                 client.answer(answer);
             } else {
                 console.log("Auto-answering randomly");
@@ -36,16 +28,10 @@ export default async function handler(req, res) {
             }
         });
 
-        client.on("Joined", () => {
-            return res.status(200).json({ success: true, message: `${username} joined successfully!` });
-        });
+        client.on("QuestionEnd", () => console.log("Question ended"));
+        client.on("QuizEnd", () => console.log("Game ended"));
 
-        client.on("QuizEnd", () => {
-            console.log("Game ended");
-        });
-
-    } catch (error) {
-        console.error(`❌ Error: ${error}`);
-        return res.status(500).json({ success: false, message: "Failed to join Kahoot" });
+    } catch (err) {
+        console.log(`❌ Error: ${err.description}`);
     }
 }
