@@ -1,7 +1,6 @@
-import Kahoot from 'kahoot.js-updated';
-import readlineSync from 'readline-sync';
+const Kahoot = require('kahoot.js-updated');
 
-export default async function handler(req, res) {
+async function handler(req, res) {
     const pin = req.body.kahootPin;
     const name = req.body.username;
     const client = new Kahoot();
@@ -11,27 +10,28 @@ export default async function handler(req, res) {
         console.log(`✅ ${name} joined successfully!`);
 
         client.on("QuestionReady", question => {
-            console.log("\nNew Question:");
-            console.log(`Type: ${question.type}`);
-            
-            if (question.type === "quiz") {
-                console.log("Choices:", question.quizQuestionAnswers[question.questionIndex]);
-                const answer = readlineSync.question('Enter answer (0-3): ');
-                client.answer(parseInt(answer));
-            } else if (question.type === "word_cloud" || question.type === "open_ended") {
-                const answer = readlineSync.question('Enter text answer: ');
-                client.answer(answer);
-            } else {
-                console.log("Auto-answering randomly");
-                const randomAnswer = Math.floor(Math.random() * question.quizQuestionAnswers[question.questionIndex]);
-                client.answer(randomAnswer);
-            }
+            // Auto-answer logic (remove readlineSync)
+            const randomAnswer = Math.floor(Math.random() * (question.quizQuestionAnswers?.[question.questionIndex] || 4));
+            client.answer(randomAnswer);
+            console.log(`${name} answered: ${randomAnswer}`);
         });
 
         client.on("QuestionEnd", () => console.log("Question ended"));
         client.on("QuizEnd", () => console.log("Game ended"));
 
+        // Send response immediately - Vercel functions can't stay open
+        return res.status(200).json({ 
+            success: true,
+            message: `${name} joined successfully`
+        });
+
     } catch (err) {
         console.log(`❌ Error: ${err.description}`);
+        return res.status(500).json({
+            error: "Bot join failed",
+            details: err.description
+        });
     }
 }
+
+module.exports = handler;
