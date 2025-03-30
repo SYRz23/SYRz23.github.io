@@ -120,6 +120,10 @@
             }
         };
 
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
         // Kahoot quiz submission
         async function submitKahootId() {
             const kahootId = document.getElementById("kahootId").value.trim();
@@ -155,7 +159,7 @@
                 if (i == 0) {
                     var final = username
                 } else {
-                    var final = username.concat(toString(i))
+                    var final = username.concat(i.toString())
                 }
                 const response = await fetch('/api/kahootbot', {
                     method: 'POST',
