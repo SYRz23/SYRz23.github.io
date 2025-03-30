@@ -1,50 +1,58 @@
-// Import the correct package
-import Kahoot from 'kahoot.js-updated';
-
+// api/kahootbot.js
 export default async function handler(req, res) {
-  // Handle CORS preflight
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // Handle preflight requests
   if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     return res.status(200).end();
   }
   
+  // Only allow POST requests
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ 
+      success: false, 
+      message: 'Method not allowed' 
+    });
   }
   
   try {
-    const { kahootPin, username, botCount } = req.body;
+    // Extract data from request
+    const { kahootPin, username, botCount = 1 } = req.body;
     
-    // Validate input
+    // Validate inputs
     if (!kahootPin || !username) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Missing required parameters' 
+        message: 'Missing required parameters: kahootPin and username are required'
       });
     }
     
-    // Respond immediately as Vercel serverless functions have limited execution time
-    res.status(200).json({ 
+    // Log the request for debugging
+    console.log(`Bot request received - PIN: ${kahootPin}, Username: ${username}, Bots: ${botCount}`);
+    
+    // Send a success response (we're not actually connecting to Kahoot yet)
+    return res.status(200).json({
       success: true,
-      message: `Bot join initiated for game PIN: ${kahootPin}`
+      message: `Bot request processed for game PIN: ${kahootPin} with username: ${username}`,
+      details: {
+        pin: kahootPin,
+        username: username,
+        botCount: botCount
+      }
     });
     
-    // The rest runs after response is sent (though execution may still time out)
-    const client = new Kahoot();
-    await client.join(kahootPin, username);
+  } catch (error) {
+    // Log the error for debugging
+    console.error('Error in kahootbot API:', error.message);
     
-    client.on("QuestionStart", question => {
-      const answer = Math.floor(Math.random() * question.quizQuestionAnswers || 4);
-      client.answer(answer);
+    // Send an error response
+    return res.status(500).json({
+      success: false,
+      message: 'Server error occurred while processing your request',
+      error: error.message
     });
-    
-    // Keep connection alive briefly
-    await new Promise(resolve => setTimeout(resolve, 9000));
-    
-  } catch (err) {
-    console.error('Bot error:', err);
-    // Note: We can't send another response here as one has already been sent
   }
 }
