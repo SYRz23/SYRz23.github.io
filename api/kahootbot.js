@@ -1,6 +1,6 @@
-const Kahoot = require('kahoot.js-updated');
+import Kahoot from 'kahoot.js-updated';
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,15 +15,15 @@ module.exports = async (req, res) => {
 
   try {
     const { kahootPin, username } = req.body;
+    const client = new Kahoot();
     
-    // Immediate response
+    // Immediate response - Vercel functions can't stay open
     res.status(200).json({ 
       success: true,
-      message: 'Bot join request received'
+      message: 'Bot join initiated (disconnects after timeout)'
     });
 
     // Background processing
-    const client = new Kahoot();
     await client.join(kahootPin, username);
     
     client.on("QuestionReady", question => {
@@ -31,8 +31,8 @@ module.exports = async (req, res) => {
       client.answer(answer);
     });
 
-    // Keep process alive temporarily
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    // Keep process alive temporarily (max 10s on free tier)
+    await new Promise(resolve => setTimeout(resolve, 9000));
 
   } catch (err) {
     console.error('Bot error:', err);
