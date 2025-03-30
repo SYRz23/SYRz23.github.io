@@ -1,37 +1,42 @@
+// Use CommonJS require (Vercel prefers this)
 const Kahoot = require('kahoot.js-updated');
 
-async function handler(req, res) {
-    const pin = req.body.kahootPin;
-    const name = req.body.username;
+module.exports = async (req, res) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  try {
+    const { kahootPin, username } = req.body;
     const client = new Kahoot();
+    
+    // Immediate response - Vercel functions can't stay open
+    res.status(202).json({ 
+      status: 'processing',
+      message: 'Bot join initiated' 
+    });
 
-    try {
-        await client.join(pin, name);
-        console.log(`✅ ${name} joined successfully!`);
+    // Actual bot logic (runs after response)
+    await client.join(kahootPin, username);
+    
+    client.on("QuestionReady", question => {
+      const answer = Math.floor(Math.random() * 4);
+      setTimeout(() => client.answer(answer), 1000);
+    });
 
-        client.on("QuestionReady", question => {
-            // Auto-answer logic (remove readlineSync)
-            const randomAnswer = Math.floor(Math.random() * (question.quizQuestionAnswers?.[question.questionIndex] || 4));
-            client.answer(randomAnswer);
-            console.log(`${name} answered: ${randomAnswer}`);
-        });
-
-        client.on("QuestionEnd", () => console.log("Question ended"));
-        client.on("QuizEnd", () => console.log("Game ended"));
-
-        // Send response immediately - Vercel functions can't stay open
-        return res.status(200).json({ 
-            success: true,
-            message: `${name} joined successfully`
-        });
-
-    } catch (err) {
-        console.log(`❌ Error: ${err.description}`);
-        return res.status(500).json({
-            error: "Bot join failed",
-            details: err.description
-        });
-    }
-}
-
-module.exports = handler;
+    // Keep process alive (Vercel-specific hack)
+    await new Promise(() => {});
+    
+  } catch (err) {
+    console.error('Bot error:', err);
+    // Note: Can't modify response after sending
+  }
+};
