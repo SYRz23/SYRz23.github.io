@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "kahoot.js-latest": "^1.0.7"
+    "kahoot.js-latest": "^1.0.7",
+    "kahoot.js-updated": "^3.404.1",
+    "readline-sync": "^1.4.10"
   }
 }
