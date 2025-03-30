@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kahoot Quiz</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.0/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
@@ -75,9 +76,40 @@
         <!-- Kahoot Bot Section -->
         <div id="KBSection" class="section">
             <h2>Kahoot Bot</h2>
+            <h2>Free Name Bypasser: https://lingojam.com/ZalgoText (just put craziness level to very low so your text is readable)</h2>
             <label for="kahootpin">Game PIN:</label>
             <input type="text" id="kahootpin" placeholder="Enter Kahoot PIN" required>
+            <h2>OCR Demo</h2>
+            <input type="file" id="imageInput" accept="image/*" />
+            <div id="output"></div>
+            <script>
+                document.getElementById('imageInput').addEventListener('change', function (e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        processImage(file);
+                    }
+                });
 
+                function processImage(file) {
+                    const outputDiv = document.getElementById('output');
+                    outputDiv.innerHTML = 'Processing...';
+                    Tesseract.recognize(
+                        file,
+                        'eng', // Language
+                        {
+                            logger: (m) => {
+                                console.log(m); // Logs progress info
+                                outputDiv.innerHTML = `Progress: ${m.status} - ${m.progress * 100}%`;
+                            }
+                        }
+                    ).then(({ data: { text } }) => {
+                        outputDiv.innerHTML = `OCR Result: <pre>${text}</pre>`;
+                    }).catch((error) => {
+                        console.error(error);
+                        outputDiv.innerHTML = 'Error during OCR processing.';
+                    });
+                }
+            </script>
             <label for="kahootuser">Username:</label>
             <input type="text" id="kahootuser" placeholder="Enter Username" required>
 
@@ -214,43 +246,15 @@
         // Process and display quiz data
         function processQuizData(quizData) {
             const quizInfoDiv = document.getElementById("quizInfo");
-            quizInfoDiv.innerHTML = '';
+            quizInfoDiv.innerHTML = "<h3>Quiz Data:</h3>";
 
-            if (!quizData || !quizData.questions || !quizData.questions.length) {
-                quizInfoDiv.innerHTML = '<p class="error">No questions found in this quiz</p>';
-                return;
-            }
-
-            // Add quiz title and information
-            if (quizData.title) {
-                quizInfoDiv.innerHTML += `<h3>Quiz: ${quizData.title}</h3>`;
-            }
-
-            quizData.questions.forEach((question, i) => {
-                if (!question) return;
-
-                let questionHtml = `<div class="question"><h3>Question ${i + 1}</h3>`;
-                questionHtml += `<p><strong>Type:</strong> ${question.type || 'Unknown'}</p>`;
-
-                if (question.question) {
-                    questionHtml += `<p><strong>Question:</strong> ${question.question}</p>`;
-                }
-
-                if (question.choices && question.choices.length) {
-                    questionHtml += `<p><strong>Correct Answer(s):</strong></p><ul>`;
-
-                    question.choices.forEach((choice, j) => {
-                        if (choice.correct) {
-                            const color = ["Red", "Blue", "Yellow", "Green"][j];
-                            questionHtml += `<li>${choice.answer} (${color})</li>`;
-                        }
-                    });
-
-                    questionHtml += `</ul>`;
-                }
-
-                questionHtml += `</div><hr>`;
-                quizInfoDiv.innerHTML += questionHtml;
+            quizData.questions.forEach(question => {
+                let questionText = `<div class="question"><strong>${question.question}</strong><br>`;
+                question.answers.forEach(answer => {
+                    questionText += `<p>${answer}</p>`;
+                });
+                questionText += "</div>";
+                quizInfoDiv.innerHTML += questionText;
             });
         }
     </script>
