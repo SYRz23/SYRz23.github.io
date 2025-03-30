@@ -148,7 +148,7 @@
             messageDiv.textContent = "Sending bots...";
             messageDiv.className = "";
 
-            const response = await fetch('/api/kahootbot', {
+            const response = await fetch('/api/kahootbot.cjs', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
