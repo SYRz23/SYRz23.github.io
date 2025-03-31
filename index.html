@@ -1,262 +1,465 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kahoot Quiz</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.0/dist/tesseract.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .hidden {
-            display: none;
-        }
-        .success {
-            color: green;
-            font-weight: bold;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-        input, button {
-            margin: 5px 0;
-            padding: 8px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .section {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-        }
-        .question {
-            background-color: #f9f9f9;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 5px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .hidden {
+        display: none;
+      }
+      .success {
+        color: green;
+        font-weight: bold;
+      }
+      .error {
+        color: red;
+        font-weight: bold;
+      }
+      input,
+      button {
+        margin: 5px 0;
+        padding: 8px;
+      }
+      button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .section {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+      .question {
+        background-color: #f9f9f9;
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 5px;
+      }
+      #nameModal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 5px;
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .close:hover {
+        color: black;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h2 id="logintitle">Login</h2>
     <form id="login">
-        <input type="text" id="username" placeholder="Username" required><br>
-        <input type="password" id="password" placeholder="Password" required><br>
-        <button type="submit">Login</button>
+      <input type="text" id="username" placeholder="Username" required /><br />
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+        required
+      /><br />
+      <button type="submit">Login</button>
     </form>
 
     <div class="hidden" id="authenticatedContent">
-        <h1>Kahoot Tools</h1>
+      <h1>Kahoot Tools</h1>
 
-        <!-- Kahoot Answers Section -->
-        <div id="quizSection" class="section">
-            <h2>Kahoot Answers</h2>
-            <label for="kahootId">Kahoot ID:</label>
-            <input type="text" id="kahootId" placeholder="Enter Kahoot ID">
-            <button onclick="submitKahootId()">Get Answers</button>
-            <div id="quizInfo"></div>
-        </div>
+      <!-- Kahoot Answers Section -->
+      <div id="quizSection" class="section">
+        <h2>Kahoot Answers</h2>
+        <label for="kahootId">Kahoot ID:</label>
+        <input type="text" id="kahootId" placeholder="Enter Kahoot ID" />
+        <button onclick="submitKahootId()">Get Answers</button>
+        <div id="quizInfo"></div>
+      </div>
 
-        <!-- Kahoot Bot Section -->
-        <div id="KBSection" class="section">
-            <h2>Kahoot Bot</h2>
-            <h2>Free Name Bypasser: https://lingojam.com/ZalgoText (just put craziness level to very low so your text is readable)</h2>
-            <label for="kahootpin">Game PIN:</label>
-            <input type="text" id="kahootpin" placeholder="Enter Kahoot PIN" required>
-            <h2>OCR Demo</h2>
-            <input type="file" id="imageInput" accept="image/*" />
-            <div id="output"></div>
-            <script>
-                document.getElementById('imageInput').addEventListener('change', function (e) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        processImage(file);
-                    }
-                });
+      <!-- Kahoot Bot Section -->
+      <div id="KBSection" class="section">
+        <h2>Kahoot Bot</h2>
+        <h2>Free Name Bypasser</h2>
+        <button id="nameGeneratorBtn" onclick="openNameGenerator()">
+          Generate Crazy Name
+        </button>
+        <label for="kahootpin">Game PIN:</label>
+        <input
+          type="text"
+          id="kahootpin"
+          placeholder="Enter Kahoot PIN"
+          required
+        />
+        <h2>OCR Demo</h2>
+        <input type="file" id="imageInput" accept="image/*" />
+        <div id="output"></div>
 
-                function processImage(file) {
-                    const outputDiv = document.getElementById('output');
-                    outputDiv.innerHTML = 'Processing...';
-                    Tesseract.recognize(
-                        file,
-                        'eng', // Language
-                        {
-                            logger: (m) => {
-                                console.log(m); // Logs progress info
-                                outputDiv.innerHTML = `Progress: ${m.status} - ${m.progress * 100}%`;
-                            }
-                        }
-                    ).then(({ data: { text } }) => {
-                        outputDiv.innerHTML = `OCR Result: <pre>${text}</pre>`;
-                    }).catch((error) => {
-                        console.error(error);
-                        outputDiv.innerHTML = 'Error during OCR processing.';
-                    });
-                }
-            </script>
-            <label for="kahootuser">Username:</label>
-            <input type="text" id="kahootuser" placeholder="Enter Username" required>
+        <label for="kahootuser">Username:</label>
+        <input
+          type="text"
+          id="kahootuser"
+          placeholder="Enter Username"
+          required
+        />
 
-            <label for="kahootbots">Number of Bots (1-50):</label>
-            <input type="number" id="kahootbots" placeholder="Number of bots" min="1" max="50" value="1">
+        <label for="kahootbots">Number of Bots (1-50):</label>
+        <input
+          type="number"
+          id="kahootbots"
+          placeholder="Number of bots"
+          min="1"
+          max="50"
+          value="1"
+        />
 
-            <label for="kahootbots">Bot Send Delay (0-1000ms):</label>
-            <input type="number" id="delaytimer" placeholder="Number of bots" min="0" max="1000" value="800">
+        <label for="kahootbots">Bot Send Delay (0-1000ms):</label>
+        <input
+          type="number"
+          id="delaytimer"
+          placeholder="Number of bots"
+          min="0"
+          max="1000"
+          value="800"
+        />
 
-            <button type="button" onclick="submitKahootBotRequest()">Send Bots</button>
-            <div id="responseMessage"></div>
-        </div>
+        <button type="button" onclick="submitKahootBotRequest()">
+          Send Bots
+        </button>
+        <div id="responseMessage"></div>
+      </div>
+    </div>
+
+    <!-- Name Generator Modal -->
+    <div id="nameModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeNameGenerator()">&times;</span>
+        <h2>Crazy Name Generator</h2>
+        <label for="normalName">Enter normal name:</label>
+        <input type="text" id="normalName" placeholder="Enter a name" />
+        <select id="crazyLevel">
+          <option value="low">Very Low (Readable)</option>
+          <option value="medium">Medium(recomended)</option>
+          <option value="high">High</option>
+        </select>
+        <button onclick="generateCrazyName()">Generate</button>
+        <div
+          id="generatedName"
+          style="margin-top: 15px; word-break: break-all"
+        ></div>
+        <button
+          id="copyButton"
+          onclick="copyGeneratedName()"
+          style="display: none"
+        >
+          Copy to Username
+        </button>
+      </div>
     </div>
 
     <script>
-        // Password Check
-        document.getElementById('login').onsubmit = function(logincheck) {
-            logincheck.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+      // Password Check
+      document.getElementById("login").onsubmit = function (logincheck) {
+        logincheck.preventDefault();
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
 
-            if (!username || !password) {
-                alert('Please enter both username and password');
-                return;
-            }
-
-            const usernameHash = CryptoJS.SHA256(username).toString();
-            const passwordHash = CryptoJS.SHA256(password).toString();
-
-            // Credientials hashed using SHA256 with no salt
-            const correctUserHash = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918";
-            const correctPwHash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
-
-            if (usernameHash === correctUserHash && passwordHash === correctPwHash) {
-                document.getElementById('logintitle').classList.add('hidden');
-                document.getElementById('login').classList.add('hidden');
-                document.getElementById('authenticatedContent').classList.remove('hidden');
-            } else {
-                alert('Invalid credentials');
-            }
-        };
-
-        function wait(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
+        if (!username || !password) {
+          alert("Please enter both username and password");
+          return;
         }
 
-        // Kahoot quiz submission
-        async function submitKahootId() {
-            const kahootId = document.getElementById("kahootId").value.trim();
-            if (!kahootId) {
-                alert("Please enter a valid Kahoot ID!");
-                return;
-            }
+        const usernameHash = CryptoJS.SHA256(username).toString();
+        const passwordHash = CryptoJS.SHA256(password).toString();
 
-            try {
-                await GetAnswers(kahootId);
-            } catch (error) {
-                console.error("Error:", error);
-                document.getElementById("quizInfo").innerHTML = `<p class="error">Failed to fetch quiz data. Please check the Kahoot ID.</p>`;
-            }
+        // Credientials hashed using SHA256 with no salt
+        const correctUserHash =
+          "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918";
+        const correctPwHash =
+          "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
+
+        if (
+          usernameHash === correctUserHash &&
+          passwordHash === correctPwHash
+        ) {
+          document.getElementById("logintitle").classList.add("hidden");
+          document.getElementById("login").classList.add("hidden");
+          document
+            .getElementById("authenticatedContent")
+            .classList.remove("hidden");
+        } else {
+          alert("Invalid credentials");
+        }
+      };
+
+      // Name Generator Functions
+      function openNameGenerator() {
+        document.getElementById("nameModal").style.display = "block";
+      }
+
+      function closeNameGenerator() {
+        document.getElementById("nameModal").style.display = "none";
+      }
+
+      function generateCrazyName() {
+        const name = document.getElementById("normalName").value;
+        const level = document.getElementById("crazyLevel").value;
+
+        if (!name) {
+          alert("Please enter a name");
+          return;
         }
 
-        // Kahoot bot submission
-        async function submitKahootBotRequest() {
-            const pin = document.getElementById("kahootpin").value.trim();
-            let username = document.getElementById("kahootuser").value.trim();
-            const botCount = parseInt(document.getElementById("kahootbots").value, 10);
-            const delay = parseInt(document.getElementById("delaytimer").value, 10);
+        let zalgoLevel = 0.1; // default for very low
+        if (level === "medium") zalgoLevel = 0.4;
+        if (level === "high") zalgoLevel = 0.8;
 
-            if (!pin || !username) {
-                alert("Please enter both PIN and username!");
-                return;
-            }
+        const crazyName = addZalgoToText(name, zalgoLevel);
 
-            const messageDiv = document.getElementById('responseMessage');
-            messageDiv.textContent = "Sending bots...";
-            messageDiv.className = "";
+        document.getElementById("generatedName").textContent = crazyName;
+        document.getElementById("copyButton").style.display = "block";
+      }
 
-            let botPromises = [];
+      function copyGeneratedName() {
+        const crazyName = document.getElementById("generatedName").textContent;
+        document.getElementById("kahootuser").value = crazyName;
+        closeNameGenerator();
+      }
 
-            for (let i = 0; i < botCount; i++) {
-                let finalUsername = i === 0 ? username : username + i.toString();
+      // Simple Zalgo text generator function
+      function addZalgoToText(text, intensity) {
+        const zalgoMarks = [
+          "\u0300",
+          "\u0301",
+          "\u0302",
+          "\u0303",
+          "\u0304",
+          "\u0305",
+          "\u0306",
+          "\u0307",
+          "\u0308",
+          "\u0309",
+          "\u030A",
+          "\u030B",
+          "\u030C",
+          "\u030D",
+          "\u030E",
+          "\u030F",
+          "\u0310",
+          "\u0311",
+          "\u0312",
+          "\u0313",
+          "\u0314",
+          "\u0315",
+          "\u0316",
+          "\u0317",
+          "\u0318",
+          "\u0319",
+          "\u031A",
+          "\u031B",
+          "\u031C",
+          "\u031D",
+          "\u031E",
+          "\u031F",
+        ];
 
-                botPromises.push(
-                    new Promise(async (resolve) => {
-                        try {
-                            const response = await fetch('/api/kahootbot', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ pin, user: finalUsername }),
-                            });
+        let result = "";
 
-                            const result = await response.json();
-                            console.log(`Bot ${finalUsername} ${response.ok ? "joined" : "failed"}`);
+        for (let i = 0; i < text.length; i++) {
+          result += text[i];
 
-                        } catch (error) {
-                            console.error(`❌ Request failed for ${finalUsername}:`, error);
-                        }
-
-                        // Wait before resolving to avoid sending all at once
-                        await wait(delay);
-                        resolve();
-                    })
-                );
-            }
-
-            await Promise.all(botPromises); // Wait for all bots to finish
-            alert(`Bots sent: ${botCount}`);
+          // Add random number of zalgo marks based on intensity
+          const markCount = Math.floor(Math.random() * 10 * intensity);
+          for (let j = 0; j < markCount; j++) {
+            const randomMark =
+              zalgoMarks[Math.floor(Math.random() * zalgoMarks.length)];
+            result += randomMark;
+          }
         }
 
-        // Fetch Kahoot answers
-        async function GetAnswers(KahootID) {
-            const proxy = "https://api.allorigins.win/get?url=";
-            const base_url = "https://create.kahoot.it/rest/kahoots/";
-            const request_url = proxy + encodeURIComponent(base_url + KahootID);
+        return result;
+      }
 
-            document.getElementById("quizInfo").innerHTML = '<p>Loading quiz data...</p>';
+      // OCR Image Processing
+      document
+        .getElementById("imageInput")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (file) {
+            processImage(file);
+          }
+        });
 
-            try {
-                const response = await axios.get(request_url);
-                if (response.data && response.data.contents) {
-                    const quizData = JSON.parse(response.data.contents);
-                    processQuizData(quizData);
-                } else {
-                    document.getElementById("quizInfo").innerHTML = '<p class="error">Invalid response format from proxy server</p>';
-                }
-            } catch (error) {
-                console.error("Error fetching quiz:", error);
-                document.getElementById("quizInfo").innerHTML = '<p class="error">Failed to fetch quiz data</p>';
-                throw error;
-            }
+      function processImage(file) {
+        const outputDiv = document.getElementById("output");
+        outputDiv.innerHTML = "Processing...";
+        Tesseract.recognize(
+          file,
+          "eng", // Language
+          {
+            logger: (m) => {
+              console.log(m); // Logs progress info
+              outputDiv.innerHTML = `Progress: ${m.status} - ${
+                m.progress * 100
+              }%`;
+            },
+          }
+        )
+          .then(({ data: { text } }) => {
+            outputDiv.innerHTML = `OCR Result: <pre>${text}</pre>`;
+          })
+          .catch((error) => {
+            console.error(error);
+            outputDiv.innerHTML = "Error during OCR processing.";
+          });
+      }
+
+      function wait(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      // Kahoot quiz submission
+      async function submitKahootId() {
+        const kahootId = document.getElementById("kahootId").value.trim();
+        if (!kahootId) {
+          alert("Please enter a valid Kahoot ID!");
+          return;
         }
 
-        // Process and display quiz data
-        function processQuizData(quizData) {
-            const quizInfoDiv = document.getElementById("quizInfo");
-            quizInfoDiv.innerHTML = "<h3>Quiz Data:</h3>";
+        try {
+          await GetAnswers(kahootId);
+        } catch (error) {
+          console.error("Error:", error);
+          document.getElementById(
+            "quizInfo"
+          ).innerHTML = `<p class="error">Failed to fetch quiz data. Please check the Kahoot ID.</p>`;
+        }
+      }
 
-            quizData.questions.forEach(question => {
-                let questionText = `<div class="question"><strong>${question.question}</strong><br>`;
-                question.answers.forEach(answer => {
-                    questionText += `<p>${answer}</p>`;
+      // Kahoot bot submission
+      async function submitKahootBotRequest() {
+        const pin = document.getElementById("kahootpin").value.trim();
+        let username = document.getElementById("kahootuser").value.trim();
+        const botCount = parseInt(
+          document.getElementById("kahootbots").value,
+          10
+        );
+        const delay = parseInt(document.getElementById("delaytimer").value, 10);
+
+        if (!pin || !username) {
+          alert("Please enter both PIN and username!");
+          return;
+        }
+
+        const messageDiv = document.getElementById("responseMessage");
+        messageDiv.textContent = "Sending bots...";
+        messageDiv.className = "";
+
+        let botPromises = [];
+
+        for (let i = 0; i < botCount; i++) {
+          let finalUsername = i === 0 ? username : username + i.toString();
+
+          botPromises.push(
+            new Promise(async (resolve) => {
+              try {
+                const response = await fetch("/api/kahootbot", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ pin, user: finalUsername }),
                 });
-                questionText += "</div>";
-                quizInfoDiv.innerHTML += questionText;
-            });
+
+                const result = await response.json();
+                console.log(
+                  `Bot ${finalUsername} ${response.ok ? "joined" : "failed"}`
+                );
+              } catch (error) {
+                console.error(`❌ Request failed for ${finalUsername}:`, error);
+              }
+
+              // Wait before resolving to avoid sending all at once
+              await wait(delay);
+              resolve();
+            })
+          );
         }
+
+        await Promise.all(botPromises); // Wait for all bots to finish
+        alert(`Bots sent: ${botCount}`);
+      }
+
+      // Fetch Kahoot answers
+      async function GetAnswers(KahootID) {
+        const proxy = "https://api.allorigins.win/get?url=";
+        const base_url = "https://create.kahoot.it/rest/kahoots/";
+        const request_url = proxy + encodeURIComponent(base_url + KahootID);
+
+        document.getElementById("quizInfo").innerHTML =
+          "<p>Loading quiz data...</p>";
+
+        try {
+          const response = await axios.get(request_url);
+          if (response.data && response.data.contents) {
+            const quizData = JSON.parse(response.data.contents);
+            processQuizData(quizData);
+          } else {
+            document.getElementById("quizInfo").innerHTML =
+              '<p class="error">Invalid response format from proxy server</p>';
+          }
+        } catch (error) {
+          console.error("Error fetching quiz:", error);
+          document.getElementById("quizInfo").innerHTML =
+            '<p class="error">Failed to fetch quiz data</p>';
+          throw error;
+        }
+      }
+
+      // Process and display quiz data
+      function processQuizData(quizData) {
+        const quizInfoDiv = document.getElementById("quizInfo");
+        quizInfoDiv.innerHTML = "<h3>Quiz Data:</h3>";
+
+        quizData.questions.forEach((question) => {
+          let questionText = `<div class="question"><strong>${question.question}</strong><br>`;
+          question.answers.forEach((answer) => {
+            questionText += `<p>${answer}</p>`;
+          });
+          questionText += "</div>";
+          quizInfoDiv.innerHTML += questionText;
+        });
+      }
     </script>
-</body>
+  </body>
 </html>
