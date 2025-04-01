@@ -397,13 +397,15 @@
                     let questionNumber = 1; // Start numbering questions
 
                     quizDataSent.questions.forEach((question) => {
-                        if (!question.question || question.question === "undefined") return; // Skip invalid questions
+                        if (!question.question || typeof question.question !== "string") return; // Skip invalid questions
 
                         let questionText = `<div class="question"><strong>${questionNumber}. ${question.question}</strong><br>`;
 
-                        // Check if valid choices exist
+                        // Ensure choices exist and are properly formatted
                         if (Array.isArray(question.choices)) {
-                            let validChoices = question.choices.filter((choice) => choice.text && choice !== "undefined");
+                            let validChoices = question.choices
+                                .map((choice) => (typeof choice === "object" && choice.text ? choice.text : choice)) // Extract text if it's an object
+                                .filter((choice) => choice && choice !== "undefined"); // Filter out undefined values
 
                             if (validChoices.length > 0) {
                                 validChoices.forEach((answer) => {
