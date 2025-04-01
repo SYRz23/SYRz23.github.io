@@ -451,15 +451,15 @@
         const quizInfoDiv = document.getElementById("quizInfo");
         quizInfoDiv.innerHTML = "<h3>Quiz Data:</h3>";
 
-        quizData.questions.forEach(question) => {
+        quizData.questions.forEach((question) => {
           let questionText = `<div class="question"><strong>${question.question}</strong><br>`;
-          question.answers.forEach(answer) => {
+          question.answers.forEach((answer) => {
             questionText += `<p>${answer}</p>`;
    
-          };
+          });
           questionText += "</div>";
           quizInfoDiv.innerHTML += questionText;
-        };
+        });
       }
     </script>
   </body>
