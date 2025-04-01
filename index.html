@@ -433,7 +433,7 @@
           const response = await axios.get(request_url);
           if (response.data && response.data.contents) {
             const quizData = JSON.parse(response.data.contents);
-            console.log("Quiz Data Being Logged:" + quizData)
+            console.log("Quiz Data Being Logged:", JSON.stringify(quizData, null, 2));
             processQuizData(quizData);
           } else {
             document.getElementById("quizInfo").innerHTML =
