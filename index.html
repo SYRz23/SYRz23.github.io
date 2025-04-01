@@ -433,6 +433,7 @@
           const response = await axios.get(request_url);
           if (response.data && response.data.contents) {
             const quizData = JSON.parse(response.data.contents);
+            console.log("Quiz Data Being Logged:" + quizData)
             processQuizData(quizData);
           } else {
             document.getElementById("quizInfo").innerHTML =
@@ -447,12 +448,12 @@
       }
 
       // Process and display quiz data
-      function processQuizData(quizData) {
-          const quizInfoDiv = JSON.parse(document.getElementById("quizInfo"));
+      function processQuizData(quizDataSent) {
+          const quizInfoDiv = document.getElementById("quizInfo");
           quizInfoDiv.innerHTML = "<h3>Quiz Data:</h3>";
 
-          if (Array.isArray(quizData.questions)) {
-            quizData.questions.forEach((question) => {
+          if (Array.isArray(quizDataSent.questions)) {
+            quizDataSent.questions.forEach((question) => {
             let questionText = `<div class="question"><strong>${question.question}</strong><br>`;
             question.choices.forEach((answer) => {
               questionText += `<p>${answer}</p>`;
