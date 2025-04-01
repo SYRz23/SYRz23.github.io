@@ -403,7 +403,7 @@
 
                         // Check if valid choices exist
                         if (Array.isArray(question.choices)) {
-                            let validChoices = question.choices.filter((choice) => choice && choice !== "undefined");
+                            let validChoices = question.choices.filter((choice) => choice.text && choice !== "undefined");
 
                             if (validChoices.length > 0) {
                                 validChoices.forEach((answer) => {
