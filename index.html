@@ -394,33 +394,34 @@
                 quizInfoDiv.innerHTML = "<h3>Quiz Data:</h3>";
 
                 if (Array.isArray(quizDataSent.questions)) {
-                    let questionNumber = 1; // Start numbering questions
+                    let questionCount = 0; // Initialize the question count
 
                     quizDataSent.questions.forEach((question) => {
-                        if (!question.question || typeof question.question !== "string") return; // Skip invalid questions
+                        // Skip survey questions, but still increment the count
+                        if (question.type === "survey") {
+                            questionCount++;
+                            return; // Skip to the next iteration
+                        }
 
-                        let questionText = `<div class="question"><strong>${questionNumber}. ${question.question}</strong><br>`;
+                        questionCount++; // Increment question number
 
-                        // Ensure choices exist and are properly formatted
-                        if (Array.isArray(question.choices)) {
-                            let validChoices = question.choices
-                                .map((choice) => (typeof choice === "object" && choice.text ? choice.text : choice)) // Extract text if it's an object
-                                .filter((choice) => choice && choice !== "undefined"); // Filter out undefined values
+                        // Start displaying the question number and the question text
+                        let questionText = `<div class="question"><strong>Question ${questionCount}: ${question.question}</strong><br>`;
 
-                            if (validChoices.length > 0) {
-                                validChoices.forEach((answer) => {
-                                    questionText += `<p>${answer}</p>`;
-                                });
-                            } else {
-                                return; // Skip question if no valid choices
-                            }
+                        // Check if 'choices' exists and is an array
+                        if (Array.isArray(question.choices) && question.choices.length > 0) {
+                            question.choices.forEach((choice) => {
+                                // Check if 'answer' property exists and is defined
+                                if (choice && choice.answer) {
+                                    questionText += `<p>${choice.answer}</p>`;
+                                }
+                            });
                         } else {
-                            return; // Skip question if choices array is missing
+                            questionText += "<p>No choices available.</p>";
                         }
 
                         questionText += "</div>";
                         quizInfoDiv.innerHTML += questionText;
-                        questionNumber++; // Increment question number
                     });
                 } else {
                     quizInfoDiv.innerHTML += "<p>No questions available.</p>";
