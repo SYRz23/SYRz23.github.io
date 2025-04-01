@@ -398,7 +398,7 @@
 
                     quizDataSent.questions.forEach((question) => {
                         // Skip survey questions, but still increment the count
-                        if (question.type === "survey") {
+                        if (question.type === "survey" || question.type === "poll" || question.type === "content") {
                             questionCount++;
                             return; // Skip to the next iteration
                         }
@@ -410,10 +410,14 @@
 
                         // Check if 'choices' exists and is an array
                         if (Array.isArray(question.choices) && question.choices.length > 0) {
-                            question.choices.forEach((choice) => {
+                            question.choices.forEach((choice, index) => {
                                 // Check if 'answer' property exists and is defined
                                 if (choice && choice.answer) {
-                                    questionText += `<p>${choice.answer}</p>`;
+                                    if (choice.correct == true) {
+                                        questionTest += `<p>Choice${index}: ${choice.answer} (Correct Answer) </p>`
+                                    } else {
+                                        questionText += `<p>${choice.answer}</p>`;
+                                    }
                                 }
                             });
                         } else {
