@@ -448,19 +448,23 @@
 
       // Process and display quiz data
       function processQuizData(quizData) {
-        const quizInfoDiv = document.getElementById("quizInfo");
-        quizInfoDiv.innerHTML = "<h3>Quiz Data:</h3>";
+          const quizInfoDiv = document.getElementById("quizInfo");
+          quizInfoDiv.innerHTML = "<h3>Quiz Data:</h3>";
 
-        quizData.questions.forEach((question) => {
-          let questionText = `<div class="question"><strong>${question["question\\"]}</strong><br>`;
-          question.answers.forEach((answer) => {
-            questionText += `<p>${answer}</p>`;
-   
-          });
-          questionText += "</div>";
-          quizInfoDiv.innerHTML += questionText;
-        });
+          if (Array.isArray(quizData.questions)) {
+            quizData.questions.forEach((question) => {
+            let questionText = `<div class="question"><strong>${question.question}</strong><br>`;
+            question.choices.forEach((answer) => {
+              questionText += `<p>${answer}</p>`;
+            });
+            questionText += "</div>";
+            quizInfoDiv.innerHTML += questionText;
+            });
+          } else {
+          quizInfoDiv.innerHTML += "<p>No questions available.</p>";
+        }
       }
+
     </script>
   </body>
 </html>
