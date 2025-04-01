@@ -452,7 +452,7 @@
         quizInfoDiv.innerHTML = "<h3>Quiz Data:</h3>";
 
         quizData.questions.forEach((question) => {
-          let questionText = `<div class="question"><strong>${question.question}</strong><br>`;
+          let questionText = `<div class="question"><strong>${question["question\\"]}</strong><br>`;
           question.answers.forEach((answer) => {
             questionText += `<p>${answer}</p>`;
    
