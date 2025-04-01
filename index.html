@@ -414,7 +414,7 @@
                                 // Check if 'answer' property exists and is defined
                                 if (choice && choice.answer) {
                                     if (choice.correct == true) {
-                                        questionText += `<p>Colour ${ColourPalete[index]},Choice${index + 1}: ${choice.answer} (Correct Answer) </p>`
+                                        questionText += `<p>Colour ${ColourPalete[parseInt(index, 10)]},Choice${index + 1}: ${choice.answer} (Correct Answer) </p>`
                                     } else {
                                         questionText += `<p>${choice.answer}</p>`;
                                     }
