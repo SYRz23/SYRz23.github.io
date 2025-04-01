@@ -448,7 +448,7 @@
 
       // Process and display quiz data
       function processQuizData(quizData) {
-          const quizInfoDiv = document.getElementById("quizInfo");
+          const quizInfoDiv = JSON.parse(document.getElementById("quizInfo"));
           quizInfoDiv.innerHTML = "<h3>Quiz Data:</h3>";
 
           if (Array.isArray(quizData.questions)) {
