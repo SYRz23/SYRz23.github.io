@@ -407,14 +407,14 @@
 
                         // Start displaying the question number and the question text
                         let questionText = `<div class="question"><strong>Question ${questionCount}: ${question.question}</strong><br>`;
-
+                        let ColourPalete = ["Red","Blue","Yellow","Green"]
                         // Check if 'choices' exists and is an array
                         if (Array.isArray(question.choices) && question.choices.length > 0) {
                             question.choices.forEach((choice, index) => {
                                 // Check if 'answer' property exists and is defined
                                 if (choice && choice.answer) {
                                     if (choice.correct == true) {
-                                        questionText += `<p>Choice${index}: ${choice.answer} (Correct Answer) </p>`
+                                        questionText += `<p>Colour ${ColourPalete[index]},Choice${index + 1}: ${choice.answer} (Correct Answer) </p>`
                                     } else {
                                         questionText += `<p>${choice.answer}</p>`;
                                     }
